@@ -7,60 +7,60 @@ export const learnItems: {
     title: "Investment Basics",
     href: "/learn/basics",
     description:
-      "Start your investing journey with foundational knowledge and key concepts.",
+      "Start your investing journey with foundational knowledge for students.",
   },
   {
-    title: "Stock Analysis",
-    href: "/learn/stock-analysis",
+    title: "Savings Strategies",
+    href: "/learn/savings",
     description:
-      "Learn how to evaluate stocks and make informed investment decisions.",
+      "Learn how to save effectively on a student budget and build your fund.",
   },
   {
-    title: "Portfolio Strategy",
-    href: "/learn/portfolio",
+    title: "Investment Types",
+    href: "/learn/types",
     description:
-      "Build and manage a diversified portfolio tailored to your goals.",
+      "Explore bonds, mutual funds, savings accounts, and more options.",
   },
   {
-    title: "Market Insights",
-    href: "/learn/market-insights",
-    description: "Stay updated with market trends and expert analysis.",
+    title: "Budgeting Tips",
+    href: "/learn/budgeting",
+    description: "Master money management and find funds to invest regularly.",
   },
   {
     title: "Risk Management",
     href: "/learn/risk",
     description:
-      "Understand and mitigate investment risks for long-term success.",
+      "Understand and balance risk as a young investor building wealth.",
   },
   {
-    title: "Educational Resources",
+    title: "Student Resources",
     href: "/learn/resources",
     description:
-      "Access guides, tutorials, and tools to enhance your investing skills.",
+      "Access guides, calculators, and tools designed for student investors.",
   },
 ];
 
 export const listItems: { title: string; href: string; description: string }[] =
   [
     {
-      title: "Why Become a Member?",
+      title: "Why Join?",
       href: "/#",
-      description: "Explore the benefits of joining our investment community.",
+      description: "Discover why students across Nigeria trust our platform.",
     },
     {
-      title: "Become a Member",
+      title: "Student Membership",
       href: "/#",
       description:
-        "Discover our flexible membership options designed for every investor.",
+        "Affordable plans designed specifically for student budgets.",
     },
     {
-      title: "Gift Membership",
+      title: "Campus Clubs",
       href: "/#",
-      description: "Share the gift of investing knowledge with others.",
+      description: "Start or join an investment club at your university.",
     },
     {
-      title: "Your Account",
+      title: "Your Dashboard",
       href: "/#",
-      description: "Manage your membership details and preferences.",
+      description: "Track your investments, goals, and learning progress.",
     },
   ];

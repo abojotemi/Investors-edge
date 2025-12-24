@@ -53,30 +53,30 @@ const StatsSection = () => {
   const stats = [
     {
       icon: <Users className="w-8 h-8" />,
-      value: "50K",
+      value: "10K",
       suffix: "+",
-      label: "Active Investors",
+      label: "Student Investors",
       color: "green" as const,
     },
     {
       icon: <DollarSign className="w-8 h-8" />,
-      value: "$2.5B",
-      suffix: "",
-      label: "Assets Tracked",
+      value: "₦500M",
+      suffix: "+",
+      label: "Student Investments",
       color: "orange" as const,
     },
     {
       icon: <TrendingUp className="w-8 h-8" />,
-      value: "24.5",
-      suffix: "%",
-      label: "Avg. Portfolio Growth",
+      value: "50",
+      suffix: "+",
+      label: "Universities Reached",
       color: "peach" as const,
     },
     {
       icon: <Award className="w-8 h-8" />,
       value: "4.9",
       suffix: "/5",
-      label: "User Rating",
+      label: "Student Rating",
       color: "green" as const,
     },
   ];
@@ -106,11 +106,11 @@ const StatsSection = () => {
         {/* Header */}
         <div className="text-center mb-12 lg:mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-            Trusted by Thousands of Investors
+            Trusted by Students Across Nigeria
           </h2>
           <p className="text-lg text-white/80 max-w-2xl mx-auto">
-            Join a growing community of successful investors who trust our
-            platform for their financial journey.
+            Join thousands of students building their financial future while
+            still in school. Start small, think big.
           </p>
         </div>
 

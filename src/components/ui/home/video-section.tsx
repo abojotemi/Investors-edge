@@ -25,8 +25,8 @@ const VideoCard = ({
 }: VideoCardProps) => {
   const categoryColors: Record<string, string> = {
     "Getting Started": "bg-primary-green text-white",
-    "Market Analysis": "bg-primary-orange text-white",
-    "Advanced Strategies": "bg-primary-peach text-white",
+    "Savings & Budgeting": "bg-primary-orange text-white",
+    "Investment Types": "bg-primary-peach text-white",
   };
 
   return (
@@ -108,17 +108,17 @@ const VideoSection = () => {
         <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16 space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-orange/20 to-primary-orange/10 text-primary-orange rounded-full text-sm font-medium border border-primary-orange/20 shadow-sm">
             <Play className="w-4 h-4" />
-            <span>Video Tutorials</span>
+            <span>Learn to Invest</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            <span className="text-foreground">Learn from </span>
+            <span className="text-foreground">Master Money </span>
             <span className="bg-gradient-to-r from-primary-green to-primary-peach bg-clip-text text-transparent">
-              the Experts
+              While in School
             </span>
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Watch our curated video tutorials to master investing fundamentals,
-            market analysis, and advanced strategies at your own pace.
+            Watch bite-sized tutorials on savings, investing basics, and
+            building wealth as a student. Learn at your own pace.
           </p>
         </div>
 

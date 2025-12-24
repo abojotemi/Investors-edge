@@ -117,51 +117,51 @@ const PricingCard = ({
 const PricingSection = () => {
   const tiers: PricingTier[] = [
     {
-      name: "Starter",
-      price: "$0",
-      period: "month",
-      description: "Perfect for beginners exploring investing",
+      name: "Student Free",
+      price: "₦0",
+      period: "forever",
+      description: "Perfect for students just getting started",
       features: [
-        "Basic portfolio tracking",
-        "5 stock watchlists",
-        "Daily market updates",
-        "Community access",
-        "Mobile app access",
+        "Start with ₦1,000 minimum",
+        "Basic investment tracking",
+        "Educational tutorials",
+        "Student community access",
+        "Savings goal tracker",
       ],
-      buttonText: "Get Started Free",
-      color: "green",
+      buttonText: "Start Free",
+      color: "orange",
     },
     {
-      name: "Pro",
-      price: "$29",
+      name: "Student Plus",
+      price: "₦2,000",
       period: "month",
-      description: "For serious investors seeking an edge",
+      description: "For students ready to level up",
       features: [
-        "Everything in Starter",
-        "Unlimited watchlists",
-        "Real-time alerts",
-        "Advanced analytics",
-        "AI recommendations",
+        "Everything in Free",
+        "Advanced learning modules",
+        "Investment simulations",
+        "Personalized recommendations",
         "Priority support",
+        "Certificate courses",
       ],
       highlighted: true,
-      buttonText: "Start Pro Trial",
+      buttonText: "Upgrade Now",
       color: "green",
     },
     {
-      name: "Enterprise",
-      price: "$99",
-      period: "month",
-      description: "For teams and professional traders",
+      name: "Campus Club",
+      price: "₦10,000",
+      period: "semester",
+      description: "For student investment clubs",
       features: [
-        "Everything in Pro",
-        "Team collaboration",
-        "API access",
-        "Custom integrations",
-        "Dedicated account manager",
-        "White-label options",
+        "Everything in Plus",
+        "Group portfolio management",
+        "Club dashboard",
+        "Workshops & webinars",
+        "Campus ambassador perks",
+        "Bulk member discounts",
       ],
-      buttonText: "Contact Sales",
+      buttonText: "Start Your Club",
       color: "peach",
     },
   ];
@@ -184,14 +184,14 @@ const PricingSection = () => {
             <span>Pricing Plans</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            <span className="text-foreground">Choose Your </span>
+            <span className="text-foreground">Affordable Plans for </span>
             <span className="bg-gradient-to-r from-primary-peach to-primary-orange bg-clip-text text-transparent">
-              Investment Plan
+              Students
             </span>
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Start free and scale as you grow. All plans include a 14-day free
-            trial with no credit card required.
+            We believe every student deserves access to wealth-building tools.
+            Start free and upgrade when you&apos;re ready.
           </p>
         </div>
 

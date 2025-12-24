@@ -99,44 +99,44 @@ const FeaturesSection = () => {
   const features = [
     {
       icon: <BarChart3 className="w-7 h-7" />,
-      title: "Real-Time Analytics",
+      title: "Diverse Investment Options",
       description:
-        "Get instant access to live market data, portfolio performance metrics, and comprehensive analytics dashboards.",
+        "Explore savings, bonds, mutual funds, real estate, and more — all tailored for student budgets and goals.",
       color: "green" as const,
     },
     {
       icon: <Shield className="w-7 h-7" />,
-      title: "Bank-Level Security",
+      title: "Student-Safe Investing",
       description:
-        "Your data is protected with enterprise-grade encryption and multi-factor authentication.",
+        "Start with low-risk options and learn responsible investing with built-in safeguards and guidance.",
       color: "orange" as const,
     },
     {
       icon: <Zap className="w-7 h-7" />,
-      title: "Lightning Fast",
+      title: "Micro-Investing",
       description:
-        "Execute trades and access insights instantly with our optimized, high-performance platform.",
+        "Begin with as little as ₦1,000. Perfect for students with limited budgets who want to start building wealth.",
       color: "peach" as const,
     },
     {
       icon: <Target className="w-7 h-7" />,
-      title: "Smart Recommendations",
+      title: "Goal-Based Planning",
       description:
-        "AI-powered investment suggestions tailored to your risk profile and financial goals.",
+        "Set financial goals like tuition savings, emergency funds, or post-graduation plans and track your progress.",
       color: "green" as const,
     },
     {
       icon: <LineChart className="w-7 h-7" />,
-      title: "Advanced Charting",
+      title: "Learn While You Earn",
       description:
-        "Professional-grade charting tools with 50+ technical indicators and drawing tools.",
+        "Interactive tutorials, quizzes, and real-world simulations to build your financial literacy as you invest.",
       color: "orange" as const,
     },
     {
       icon: <Users className="w-7 h-7" />,
-      title: "Community Insights",
+      title: "Student Community",
       description:
-        "Connect with fellow investors, share strategies, and learn from the community.",
+        "Connect with fellow student investors, share tips, join investment clubs, and learn together.",
       color: "peach" as const,
     },
   ];
@@ -157,17 +157,17 @@ const FeaturesSection = () => {
         <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16 space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-green/10 text-primary-green rounded-full text-sm font-medium">
             <Zap className="w-4 h-4" />
-            <span>Powerful Features</span>
+            <span>Built for Students</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            <span className="text-foreground">Everything You Need to </span>
+            <span className="text-foreground">Invest Smarter, </span>
             <span className="bg-gradient-to-r from-primary-orange to-primary-peach bg-clip-text text-transparent">
-              Succeed
+              Not Harder
             </span>
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Our comprehensive suite of tools empowers you to make informed
-            investment decisions with confidence.
+            Whether it&apos;s savings, bonds, or mutual funds — we make
+            investing accessible, educational, and rewarding for every student.
           </p>
         </div>
 

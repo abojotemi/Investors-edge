@@ -30,19 +30,19 @@ const CTASection = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-full text-sm font-medium backdrop-blur-sm border border-white/20">
             <Mail className="w-4 h-4" />
-            <span>Join 50,000+ Investors</span>
+            <span>Join 10,000+ Student Investors</span>
           </div>
 
           {/* Headline */}
           <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight">
-            Ready to Take Control of{" "}
-            <span className="text-primary-orange">Your Financial Future?</span>
+            Start Building Wealth{" "}
+            <span className="text-primary-orange">While Still in School</span>
           </h2>
 
           {/* Subtext */}
           <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed">
-            Start your journey today with our free plan. No credit card
-            required. Upgrade anytime as your portfolio grows.
+            Your future self will thank you. Begin your investment journey today
+            with as little as ₦1,000. No experience needed.
           </p>
 
           {/* CTA Buttons */}
@@ -51,7 +51,7 @@ const CTASection = () => {
               size="lg"
               className="bg-white text-primary-green hover:bg-white/90 px-8 py-6 text-lg font-semibold shadow-xl transition-all hover:-translate-y-0.5 hover:shadow-2xl"
             >
-              Get Started Free
+              Start Investing Free
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             <Button
@@ -59,7 +59,7 @@ const CTASection = () => {
               size="lg"
               className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold transition-all hover:-translate-y-0.5 bg-transparent"
             >
-              Schedule a Demo
+              Watch How It Works
             </Button>
           </div>
 
@@ -77,7 +77,7 @@ const CTASection = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <span>No credit card required</span>
+              <span>Start with ₦1,000</span>
             </div>
             <div className="flex items-center gap-2">
               <svg
@@ -91,7 +91,7 @@ const CTASection = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <span>14-day free trial</span>
+              <span>Student-verified</span>
             </div>
             <div className="flex items-center gap-2">
               <svg
@@ -105,7 +105,7 @@ const CTASection = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              <span>Cancel anytime</span>
+              <span>Learn as you invest</span>
             </div>
           </div>
         </div>

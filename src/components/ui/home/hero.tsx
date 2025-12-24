@@ -22,23 +22,23 @@ const Hero = () => {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-green/20 to-primary-green/10 text-primary-green rounded-full text-sm font-medium border border-primary-green/20 shadow-sm">
               <TrendingUp className="w-4 h-4" />
-              <span>Trusted by 10,000+ Investors</span>
+              <span>Built for Students</span>
             </div>
 
             {/* Headline */}
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
                 <span className="text-foreground">Your</span>{" "}
-                <span className="text-primary-peach">Investor&apos;s</span>
+                <span className="text-primary-peach">Student</span>
                 <br />
                 <span className="bg-gradient-to-r from-primary-green to-primary-green/70 bg-clip-text text-transparent">
-                  Edge
+                  Investment Edge
                 </span>
               </h1>
               <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Empowering investors with cutting-edge tools, real-time
-                insights, and expert analysis for smarter, more confident
-                investment decisions.
+                Empowering students to build wealth early through smart
+                investing. Learn, invest, and grow your financial future while
+                still in school.
               </p>
             </div>
 
@@ -64,11 +64,11 @@ const Hero = () => {
             <div className="flex flex-wrap gap-6 justify-center lg:justify-start pt-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary-green/5 px-3 py-1.5 rounded-full">
                 <Shield className="w-5 h-5 text-primary-green" />
-                <span>Bank-level Security</span>
+                <span>Student-Friendly</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary-orange/5 px-3 py-1.5 rounded-full">
                 <BarChart3 className="w-5 h-5 text-primary-orange" />
-                <span>Real-time Analytics</span>
+                <span>Learn as You Invest</span>
               </div>
             </div>
           </div>
@@ -104,10 +104,10 @@ const Hero = () => {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-primary-green">
-                      +24.5%
+                      10K+
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Avg. Portfolio Growth
+                      Student Investors
                     </p>
                   </div>
                 </div>
@@ -115,7 +115,7 @@ const Hero = () => {
 
               {/* Floating badge */}
               <div className="absolute -top-4 -right-4 bg-primary-orange text-white rounded-full px-4 py-2 shadow-lg hidden sm:block">
-                <p className="text-sm font-semibold">#1 Rated Platform</p>
+                <p className="text-sm font-semibold">#1 Student Platform</p>
               </div>
             </div>
           </div>

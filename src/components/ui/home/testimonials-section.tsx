@@ -107,25 +107,25 @@ const TestimonialsSection = () => {
   const testimonials = [
     {
       content:
-        "Investor's Edge has completely transformed how I approach investing. The real-time analytics and intuitive interface make complex decisions feel simple.",
-      author: "Sarah Chen",
-      role: "Portfolio Manager",
+        "As a 200-level student, I never thought I could start investing. This platform made it so easy — I started with just ₦5,000 and I'm already seeing growth!",
+      author: "Chidi Okonkwo",
+      role: "Engineering Student, UNILAG",
       rating: 5,
       highlight: false,
     },
     {
       content:
-        "The best investment platform I've ever used. The AI recommendations have helped me achieve returns I never thought possible. Highly recommended!",
-      author: "Michael Rodriguez",
-      role: "Day Trader",
+        "The educational content is amazing! I learned about savings bonds, mutual funds, and even real estate investing while managing my allowance better.",
+      author: "Amara Eze",
+      role: "Medical Student, UI",
       rating: 5,
       highlight: true,
     },
     {
       content:
-        "As a beginner, I was intimidated by investing. This platform's educational resources and community support made learning enjoyable and profitable.",
-      author: "Emily Thompson",
-      role: "Retail Investor",
+        "I used to waste my pocket money, but now I invest a portion every month. The student community here is supportive and we share tips regularly.",
+      author: "Tunde Adeyemi",
+      role: "Business Student, OAU",
       rating: 5,
       highlight: false,
     },
@@ -149,14 +149,14 @@ const TestimonialsSection = () => {
             <span>Testimonials</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            <span className="text-foreground">What Our </span>
+            <span className="text-foreground">What </span>
             <span className="bg-gradient-to-r from-primary-green to-primary-orange bg-clip-text text-transparent">
-              Investors Say
+              Students Say
             </span>
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Don&apos;t just take our word for it. Hear from thousands of
-            satisfied investors who have transformed their financial future.
+            Hear from students across Nigerian universities who are building
+            wealth and financial literacy with our platform.
           </p>
         </div>
 

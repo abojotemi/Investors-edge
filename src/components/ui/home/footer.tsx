@@ -23,7 +23,6 @@ const Footer = () => {
         { label: "Pricing", href: "#" },
         { label: "Security", href: "#" },
         { label: "Integrations", href: "#" },
-        { label: "API", href: "#" },
       ],
     },
     resources: {
@@ -41,8 +40,6 @@ const Footer = () => {
       links: [
         { label: "About Us", href: "#" },
         { label: "Careers", href: "#" },
-        { label: "Press", href: "#" },
-        { label: "Partners", href: "#" },
         { label: "Contact", href: "#" },
       ],
     },
@@ -96,11 +93,11 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-primary-orange" />
-                <span>+1 (555) 123-4567</span>
+                <span>+234 90 2507 5771</span>
               </div>
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-primary-orange flex-shrink-0 mt-0.5" />
-                <span>123 Financial District, New York, NY 10004</span>
+                <span>123 Financial District, Lagos, Nigeria</span>
               </div>
             </div>
 
