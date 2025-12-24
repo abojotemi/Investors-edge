@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Oswald } from "next/font/google";
 import "./globals.css";
+import { Navigation } from "@/components/navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const oswald = Oswald({
+  variable: "--font-oswald",
   subsets: ["latin"],
 });
 
@@ -25,9 +21,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${oswald.variable} ${oswald.variable} font-oswald tracking-wide antialiased flex flex-col items-center justify-center min-w-screen max-w-screen overflow-x-hidden`}
       >
-        {children}
+        <Navigation />
+        <div className="flex w-full flex-1 flex-col items-center justify-center">
+          {children}
+        </div>
       </body>
     </html>
   );
