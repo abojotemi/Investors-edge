@@ -75,7 +75,7 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <Image
-              src="/logo.jpg"
+              src="/logo.png"
               alt="Logo"
               width={160}
               height={40}

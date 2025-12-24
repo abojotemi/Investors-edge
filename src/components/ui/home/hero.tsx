@@ -104,7 +104,7 @@ const Hero = () => {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-primary-green">
-                      10K+
+                      Erudite
                     </p>
                     <p className="text-xs text-muted-foreground">
                       Student Investors
