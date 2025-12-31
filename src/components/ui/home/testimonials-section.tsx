@@ -132,7 +132,7 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section className="relative py-16 lg:py-24 bg-gradient-to-br from-primary-orange/10 via-background to-primary-peach/10">
+    <section className="relative min-h-screen flex flex-col justify-center py-16 lg:py-24 bg-gradient-to-br from-primary-orange/10 via-background to-primary-peach/10">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-1/4 w-72 h-72 bg-primary-orange/20 rounded-full blur-3xl" />

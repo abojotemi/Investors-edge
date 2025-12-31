@@ -167,7 +167,7 @@ const PricingSection = () => {
   ];
 
   return (
-    <section className="relative py-16 lg:py-24 bg-gradient-to-b from-background via-primary-peach/5 to-background">
+    <section className="relative min-h-screen flex flex-col justify-center py-16 lg:py-24 bg-gradient-to-b from-background via-primary-peach/5 to-background">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-0 w-72 h-72 bg-primary-green/15 rounded-full blur-3xl" />

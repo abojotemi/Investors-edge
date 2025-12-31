@@ -94,7 +94,7 @@ const VideoCard = ({
 
 const VideoSection = () => {
   return (
-    <section className="relative py-16 lg:py-24 bg-gradient-to-br from-primary-peach/10 via-background to-primary-green/10">
+    <section className="relative min-h-screen flex flex-col justify-center py-16 lg:py-24 bg-gradient-to-br from-primary-peach/10 via-background to-primary-green/10">
       {/* Background decorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary-green/20 rounded-full blur-3xl" />

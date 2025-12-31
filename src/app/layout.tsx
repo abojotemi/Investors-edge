@@ -22,14 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${oswald.variable} ${oswald.variable} font-oswald tracking-wide antialiased flex flex-col items-center justify-center min-w-screen max-w-screen overflow-x-hidden`}
+        className={`${oswald.variable} ${oswald.variable} font-oswald tracking-wide antialiased flex flex-col min-w-screen max-w-screen overflow-hidden`}
       >
         <Navigation />
-        <div className="flex w-full flex-1 flex-col items-center justify-center">
-          {children}
-        </div>
+        <div className="flex w-full flex-1 flex-col">{children}</div>
       </body>
     </html>
   );
 }
-
