@@ -4,63 +4,132 @@ export const learnItems: {
   description: string;
 }[] = [
   {
-    title: "Investment Basics",
-    href: "/learn/basics",
+    title: "Learning Hub",
+    href: "/learn",
     description:
-      "Start your investing journey with foundational knowledge for students.",
+      "Access videos, articles, downloads and quick tips to build your investment knowledge.",
+  },
+  // {
+  //   title: "Investment Basics",
+  //   href: "/learn#videos",
+  //   description:
+  //     "Start your investing journey with foundational knowledge and video tutorials.",
+  // },
+  // {
+  //   title: "Downloads & Resources",
+  //   href: "/learn#downloads",
+  //   description:
+  //     "Get presentations, calculators, and templates to support your learning.",
+  // },
+  // {
+  //   title: "Articles & Guides",
+  //   href: "/learn#articles",
+  //   description:
+  //     "Read in-depth articles on investment strategies and analysis.",
+  // },
+  // {
+  //   title: "Risk Management",
+  //   href: "/learn#tips",
+  //   description:
+  //     "Quick tips on managing risk and building disciplined investing habits.",
+  // },
+];
+
+export const investmentItems: {
+  title: string;
+  href: string;
+  description: string;
+}[] = [
+  {
+    title: "Investment Opportunities",
+    href: "/opportunities",
+    description:
+      "Explore curated investment options across stocks, real estate, bonds, and more.",
   },
   {
-    title: "Savings Strategies",
-    href: "/learn/savings",
+    title: "Market Insights",
+    href: "/insights",
     description:
-      "Learn how to save effectively on a student budget and build your fund.",
+      "Weekly analysis, economic trends, and expert investment perspectives.",
   },
+];
+
+export const communityItems: {
+  title: string;
+  href: string;
+  description: string;
+}[] = [
   {
-    title: "Investment Types",
-    href: "/learn/types",
+    title: "Community Hub",
+    href: "/community",
     description:
-      "Explore bonds, mutual funds, savings accounts, and more options.",
+      "Join our community of investors sharing insights and experiences.",
   },
+  // {
+  //   title: "Discussion Forum",
+  //   href: "/community/forum",
+  //   description:
+  //     "Ask questions, share insights, and connect with fellow investors.",
+  // },
+  // {
+  //   title: "Success Stories",
+  //   href: "/community/stories",
+  //   description:
+  //     "Read inspiring stories from members who achieved their investment goals.",
+  // },
+  // {
+  //   title: "Events & Webinars",
+  //   href: "/community/events",
+  //   description:
+  //     "Join live webinars, workshops, and Q&A sessions with experts.",
+  // },
+];
+
+export const aboutItems: {
+  title: string;
+  href: string;
+  description: string;
+}[] = [
   {
-    title: "Budgeting Tips",
-    href: "/learn/budgeting",
-    description: "Master money management and find funds to invest regularly.",
+    title: "About Us",
+    href: "/about",
+    description: "Learn about our mission to democratize investment knowledge.",
   },
-  {
-    title: "Risk Management",
-    href: "/learn/risk",
-    description:
-      "Understand and balance risk as a young investor building wealth.",
-  },
-  {
-    title: "Student Resources",
-    href: "/learn/resources",
-    description:
-      "Access guides, calculators, and tools designed for student investors.",
-  },
+  // {
+  //   title: "Our Team",
+  //   href: "/about/team",
+  //   description: "Meet the experts and advisors behind Investor's Edge.",
+  // },
+  // {
+  //   title: "Contact Us",
+  //   href: "/about/contact",
+  //   description: "Get in touch with our team for support or inquiries.",
+  // },
 ];
 
 export const listItems: { title: string; href: string; description: string }[] =
   [
     {
       title: "Why Join?",
-      href: "/#",
-      description: "Discover why students across Nigeria trust our platform.",
-    },
-    {
-      title: "Student Membership",
-      href: "/#",
+      href: "/#features",
       description:
-        "Affordable plans designed specifically for student budgets.",
+        "Discover why investors across Nigeria trust Investor's Edge.",
     },
     {
-      title: "Campus Clubs",
-      href: "/#",
-      description: "Start or join an investment club at your university.",
+      title: "Membership Benefits",
+      href: "/#pricing",
+      description:
+        "Affordable plans designed to help you grow your investment portfolio.",
+    },
+    {
+      title: "Investment Community",
+      href: "/community",
+      description:
+        "Join our community of disciplined investors building wealth together.",
     },
     {
       title: "Your Dashboard",
-      href: "/#",
+      href: "/dashboard",
       description: "Track your investments, goals, and learning progress.",
     },
   ];

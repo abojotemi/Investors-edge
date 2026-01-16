@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veritas Kapital Assurance | Titan Investors</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8fdfc;
+      color: #000000;
+    }
+    header {
+      background-color: #000000;
+      color: #ffffff;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5em;
+      color: #51b9a3;
+    }
+    nav a {
+      color: #ffffff;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+    nav a:hover {
+      color: #51b9a3;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .stock-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #ffffff, #f0fdfb);
+      border: 2px solid #51b9a3;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+    }
+    .stock-header h3 {
+      margin: 0;
+      font-size: 1.8em;
+      color: #000000;
+    }
+    .stock-header span {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #51b9a3;
+    }
+    .analysis {
+      margin-top: 30px;
+      padding: 20px;
+      background: #ffffff;
+      border-left: 5px solid #51b9a3;
+      border-radius: 8px;
+      line-height: 1.7;
+      box-shadow: 0px 4px 8px rgba(0,0,0,0.05);
+    }
+    .highlights {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .card {
+      background: linear-gradient(135deg, #ffffff, #f0fdfb);
+      border: 2px solid #51b9a3;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.15);
+    }
+    .trade-info {
+      margin-top: 40px;
+      padding: 25px;
+      background: linear-gradient(135deg, #f0fdfb, #ffffff);
+      border: 2px solid #51b9a3;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    }
+    .trade-info h3 {
+      margin-top: 0;
+      color: #000000;
+    }
+    .trade-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .trade-card {
+      background: #ffffff;
+      border: 2px solid #51b9a3;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      font-weight: bold;
+      color: #000000;
+      box-shadow: 0px 3px 8px rgba(0,0,0,0.1);
+    }
+    .comment-section {
+      margin-top: 40px;
+      padding: 20px;
+      background: #ffffff;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+    }
+    .comment-section h3 {
+      margin-top: 0;
+    }
+    .comment-section input, .comment-section textarea {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+    .comment-section button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #51b9a3;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .comment-section button:hover {
+      background-color: #3d9482;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 20px;
+      background-color: #51b9a3;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    .back-link:hover {
+      background-color: #3d9482;
+    }
+    footer {
+      background-color: #000000;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+      margin-top: 50px;
+    }
+  </style>
+  <script>
+    function sendComment(event) {
+      event.preventDefault();
+      const email = document.getElementById('email').value;
+      const comment = document.getElementById('comment').value;
+
+      if(email && comment){
+        window.location.href = `mailto:aghwanaerhuvwu14@gmail.com?subject=New Comment from ${email}&body=${encodeURIComponent(comment)}`;
+        alert('✅ Thanks for replying! Your comment has been sent.');
+        document.getElementById('email').value = '';
+        document.getElementById('comment').value = '';
+      } else {
+        alert('⚠️ Please fill in both your email and comment.');
+      }
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>📊 Titan Investors</h1>
+    <nav>
+      <a href="index.html">🏠 Home</a>
+      <a href="community.html">🤝 Community</a>
+      <a href="stocks.html">📊 Stock Updates</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="stock-header">
+      <h3>Veritas Kapital Assurance</h3>
+      <span>Ticker: VERITAS</span>
+    </div>
+
+    <div class="analysis">
+      <p>Veritas Kapital is positioned as a strong player in the Nigerian insurance sector. Following the government’s recapitalization drive signed by the president, Veritas stands out as one of the companies expected to gain significant investor attention.</p>
+      <p>Earlier this year, Veritas experienced a strong surge (up to ₦3.06) driven by FOMO around the new insurance reform. Currently, the stock has corrected by over 30% and is consolidating, offering a potential entry point for long-term investors.</p>
+      <p>Unlike some other insurance firms, Veritas has relatively solid financials, making it better positioned to benefit once the reforms begin to take effect. Patience is key here: we enter when the market is cold, and exit when the broader investor community rushes in.</p>
+    </div>
+
+    <div class="highlights">
+      <div class="card">
+        <h4>✅ Why Veritas?</h4>
+        <p>Beneficiary of insurance sector recapitalization reforms with long-term upside potential.</p>
+      </div>
+      <div class="card">
+        <h4>📉 Current Status</h4>
+        <p>Down 30% from its highs, consolidating and building a strong base.</p>
+      </div>
+      <div class="card">
+        <h4>📈 Outlook</h4>
+        <p>When reforms kick in and investor sentiment returns, Veritas could see significant growth.</p>
+      </div>
+    </div>
+
+    <div class="trade-info">
+      <h3>💹 Trade Setup</h3>
+      <div class="trade-grid">
+        <div class="trade-card">Buy Range: ₦2.20 – ₦2.40</div>
+        <div class="trade-card">Target Profit: +40%</div>
+        <div class="trade-card">Risk Price: ₦1.80</div>
+      </div>
+    </div>
+
+    <div class="comment-section">
+      <h3>💬 Share Your Thoughts</h3>
+      <form onsubmit="sendComment(event)">
+        <input type="email" id="email" placeholder="Your Email" required>
+        <textarea id="comment" placeholder="Leave a comment..." required></textarea>
+        <button type="submit">Send Comment</button>
+      </form>
+    </div>
+
+    <a href="stocks.html" class="back-link">⬅ Back to Stock Updates</a>
+  </div>
+
+  <footer>
+    <p>© 2025 Titan Investors | Knowledge First, Profit Next</p>
+  </footer>
+</body>
+</html>

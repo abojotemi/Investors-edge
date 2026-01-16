@@ -138,10 +138,10 @@ const Hero = () => {
             className="space-y-6"
           >
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight">
-              <span className="text-foreground">Your</span>{" "}
+              <span className="text-foreground">What</span>{" "}
               <span className="text-primary-peach">Smart</span>
               <br />
-              <span className="text-primary-green">Investment Edge</span>
+              <span className="text-primary-green">Investors See</span>
             </h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -149,8 +149,7 @@ const Hero = () => {
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               className="text-lg sm:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
             >
-              Empowering everyone to build wealth through smart investing.
-              Learn, invest, and grow your financial future with confidence.
+              We analyze the market to identify stocks with strong potential, before they make major moves.
             </motion.p>
           </motion.div>
 
@@ -165,15 +164,8 @@ const Hero = () => {
               size="lg"
               className="bg-primary-green hover:bg-primary-green/90 text-white px-10 py-7 text-lg font-semibold shadow-lg shadow-primary-green/25 transition-all hover:shadow-xl hover:shadow-primary-green/30 hover:-translate-y-0.5"
             >
-              Get Started Free
+              Join our community
               <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="px-10 py-7 text-lg font-semibold border-2 hover:bg-accent transition-all hover:-translate-y-0.5"
-            >
-              Watch Demo
             </Button>
           </motion.div>
 
@@ -210,27 +202,27 @@ const Hero = () => {
                 <Users className="w-5 h-5 text-primary-green" />
               </div>
               <p className="text-3xl sm:text-4xl font-bold text-primary-green">
-                XX+
+                Learn...
               </p>
-              <p className="text-sm text-muted-foreground">Investors</p>
+              {/* <p className="text-sm text-muted-foreground">Investors</p> */}
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <TrendingUp className="w-5 h-5 text-primary-orange" />
               </div>
               <p className="text-3xl sm:text-4xl font-bold text-primary-orange">
-                ₦XX+
+                Invest...
               </p>
-              <p className="text-sm text-muted-foreground">Invested</p>
+              {/* <p className="text-sm text-muted-foreground">Invested</p> */}
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Shield className="w-5 h-5 text-primary-peach" />
               </div>
               <p className="text-3xl sm:text-4xl font-bold text-primary-peach">
-                XX+
+                Grow
               </p>
-              <p className="text-sm text-muted-foreground">Universities</p>
+              {/* <p className="text-sm text-muted-foreground">Universities</p> */}
             </div>
           </motion.div>
         </div>

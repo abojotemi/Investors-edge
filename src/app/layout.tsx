@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
-import { Oswald } from "next/font/google";
+import { Oswald, Inter } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/navbar";
+import { AuthProvider } from "@/context/auth-context";
+import { Toaster } from "@/components/ui/sonner";
 
 const oswald = Oswald({
   variable: "--font-oswald",
   subsets: ["latin"],
 });
 
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Investor's Edge - Student Investing Made Simple",
+  title: "Investor's Edge - Smart Investing Made Simple",
   description:
-    "Empowering students to build wealth early through smart investing. Learn, invest, and grow your financial future while still in school.",
+    "Empowering everyone to build wealth through smart investing. Learn, invest, and grow your financial future with confidence.",
 };
 
 export default function RootLayout({
@@ -22,10 +30,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${oswald.variable} ${oswald.variable} font-oswald tracking-wide antialiased flex flex-col min-w-screen max-w-screen overflow-hidden`}
+        className={`${inter.variable} ${inter.variable} font-inter tracking-wide antialiased flex flex-col min-w-screen max-w-screen overflow-x-hidden`}
       >
-        <Navigation />
-        <div className="flex w-full flex-1 flex-col">{children}</div>
+        <AuthProvider>
+          <Navigation />
+          <div className="flex w-full flex-1 flex-col">{children}</div>
+          <Toaster richColors position="top-right" />
+        </AuthProvider>
       </body>
     </html>
   );

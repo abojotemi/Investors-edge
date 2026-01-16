@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Updates | Titan Investors</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8fdfc;
+      color: #000000;
+    }
+    header {
+      background-color: #000000;
+      color: #ffffff;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5em;
+      color: #51b9a3;
+    }
+    nav a {
+      color: #ffffff;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+    nav a:hover {
+      color: #51b9a3;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2em;
+      color: #000000;
+    }
+    .stock-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 25px;
+    }
+    .stock-card {
+      background: linear-gradient(135deg, #ffffff, #f0fdfb);
+      border: none;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0px 6px 16px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+    }
+    .stock-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, #51b9a3, #000000);
+    }
+    .stock-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0px 10px 20px rgba(0,0,0,0.15);
+    }
+    .stock-card h3 {
+      margin: 0;
+      font-size: 1.5em;
+      color: #000000;
+    }
+    .stock-card span {
+      display: inline-block;
+      margin-top: 10px;
+      background: #51b9a3;
+      color: #ffffff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+    .date-label {
+      margin-top: 15px;
+      display: inline-block;
+      background: linear-gradient(90deg, #000000, #51b9a3);
+      color: #ffffff;
+      padding: 6px 14px;
+      font-size: 0.85em;
+      border-radius: 20px;
+      font-weight: bold;
+    }
+    footer {
+      background-color: #000000;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📊 Titan Investors</h1>
+    <nav>
+      <a href="home.html">🏠 Home</a>
+      <a href="community.html">🤝 Community</a>
+      <a href="stocks.html">📊 Stock Updates</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h2>📌 Latest Stock Recommendations</h2>
+    <div class="stock-list">
+      <a href="veritas.html" class="stock-card">
+        <h3>Veritas Kapital Assurance</h3>
+        <span>Ticker: VERITAS</span>
+        <div class="date-label">Added: Jan 25, 2025</div>
+      </a>
+      <a href="jberger.html" class="stock-card">
+        <h3>Julius Berger Nigeria Plc</h3>
+        <span>Ticker: JBERGER</span>
+        <div class="date-label">Added: Jan 27, 2025</div>
+      </a>
+      <!-- Add new stocks here by duplicating the block above -->
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 Titan Investors | Knowledge First, Profit Next</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Learning Hub | Titan Investors</title>
+  <style>
+    :root{
+      --teal:#51b9a3;
+      --black:#000000;
+      --white:#ffffff;
+      --bg:#f6fdfb;
+      --muted:#6b6b6b;
+      --card-shadow: 0 8px 30px rgba(7,16,20,0.06);
+      --radius:14px;
+      --glass: rgba(255,255,255,0.7);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:linear-gradient(180deg,var(--bg),#ffffff);
+      color:#071018;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Header */
+    header{
+      background:var(--black);
+      color:var(--white);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:18px 28px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.12);
+    }
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand h1{margin:0;font-size:1.05rem;color:var(--teal);letter-spacing:1px}
+    nav a{color:var(--white);text-decoration:none;margin-left:18px;font-weight:600}
+    nav a:hover{color:var(--teal)}
+
+    /* Hero */
+    .hero{
+      max-width:1100px;margin:28px auto 10px;padding:28px;border-radius:16px;background:linear-gradient(180deg,rgba(81,185,163,0.08),rgba(255,255,255,0.6));box-shadow:var(--card-shadow);display:flex;gap:20px;align-items:center;justify-content:space-between;
+    }
+    .hero-text h2{margin:0 0 8px;font-size:1.6rem}
+    .hero-text p{margin:0;color:var(--muted)}
+    .hero-actions{display:flex;gap:12px}
+    .btn{background:var(--teal);color:var(--white);padding:10px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer}
+    .btn.ghost{background:transparent;border:2px solid rgba(81,185,163,0.14);color:var(--black)}
+
+    /* layout */
+    .layout{max-width:1100px;margin:18px auto;padding:0 20px}
+    .tabs{display:flex;gap:12px;margin-bottom:20px}
+    .tab{padding:10px 16px;border-radius:12px;background:transparent;border:1px solid transparent;color:var(--muted);cursor:pointer;font-weight:700}
+    .tab.active{background:linear-gradient(90deg,var(--teal),#2f9f8b);color:var(--white);box-shadow:0 6px 20px rgba(81,185,163,0.12)}
+
+    /* grid of content cards */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+    .card{background:var(--white);border-radius:var(--radius);padding:18px;box-shadow:var(--card-shadow);border-left:4px solid rgba(81,185,163,0.12);overflow:hidden}
+    .card h4{margin:0 0 8px;font-size:1.05rem}
+    .meta{font-size:0.85rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+    .tag{background:linear-gradient(90deg,var(--teal),#2f9f8b);color:var(--white);padding:6px 10px;border-radius:999px;font-weight:700;font-size:0.8rem}
+
+    /* player placeholder */
+    .video-thumb{height:160px;border-radius:10px;background:linear-gradient(180deg,#eaf8f3,#ffffff);display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700}
+
+    /* downloads */
+    .file-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;background:linear-gradient(180deg,#fbfffe,#ffffff);border:1px solid rgba(7,16,20,0.04)}
+    .file-row .file-name{font-weight:700}
+    .file-actions{margin-left:auto;display:flex;gap:8px}
+
+    /* article */
+    .article-snippet{color:var(--muted);line-height:1.6}
+
+    /* quick tips */
+    .tip{background:linear-gradient(90deg,#fffefc,#f7fffb);padding:14px;border-radius:10px;border:1px solid rgba(81,185,163,0.06)}
+
+    /* responsive controls and footer */
+    .footer{max-width:1100px;margin:40px auto;padding:30px;text-align:center;color:var(--muted);font-size:0.95rem}
+
+    /* small polish */
+    .small{font-size:0.85rem;color:var(--muted)}
+    .controls{display:flex;gap:10px;align-items:center}
+
+    /* upload placeholders */
+    .upload{display:inline-block;padding:8px 12px;background:linear-gradient(90deg,#ffffff,#f0fdfb);border:1px dashed rgba(81,185,163,0.18);color:var(--muted);border-radius:10px}
+
+    /* make links non-underlined */
+    a{color:inherit;text-decoration:none}
+
+    @media (max-width:720px){
+      .hero{flex-direction:column;align-items:flex-start}
+      header{padding:14px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><img src="0de4faa0-5121-44f8-9861-72b10221817c.png" alt="logo" style="width:40px;height:40px;border-radius:8px;object-fit:cover"><h1>TITAN INVESTORS</h1></div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="community.html">Community</a>
+      <a href="stocks.html">Stocks</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-text">
+      <h2>Learning Hub — Resources, Videos & Guides</h2>
+      <p class="small">A central place to watch lessons, download files and read write-ups. Everything you need to build disciplined investing skills.</p>
+    </div>
+    <div class="hero-actions">
+      <button class="btn" onclick="openTab('videos')">Watch Videos</button>
+      <button class="btn ghost" onclick="openTab('downloads')">Downloads</button>
+    </div>
+  </section>
+
+  <main class="layout">
+    <div class="controls" style="justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="tabs">
+        <button class="tab active" data-tab="videos" onclick="openTab('videos')">🎥 Videos</button>
+        <button class="tab" data-tab="downloads" onclick="openTab('downloads')">📂 Downloads</button>
+        <button class="tab" data-tab="articles" onclick="openTab('articles')">✍️ Articles</button>
+        <button class="tab" data-tab="tips" onclick="openTab('tips')">⚡ Quick Tips</button>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="upload">+ Upload</span>
+        <span class="small">Pro tip: drag & drop files to your CMS upload area</span>
+      </div>
+    </div>
+
+    <!-- VIDEOS -->
+    <section id="videos" class="tab-content">
+      <div class="grid">
+        <article class="card">
+          <div class="video-thumb">Video: How I Built My Portfolio</div>
+          <h4>How I Built My Portfolio (Case Study)</h4>
+          <div class="meta"><div class="small">Duration: 18m • Jan 20, 2025</div><div class="tag">Video</div></div>
+        </article>
+
+        <article class="card">
+          <div class="video-thumb">Video: Buying on Trove</div>
+          <h4>How to Use Trove — Step-by-step</h4>
+          <div class="meta"><div class="small">Duration: 12m • Jan 10, 2025</div><div class="tag">Video</div></div>
+        </article>
+
+        <article class="card">
+          <div class="video-thumb">Video: Risk & Psychology</div>
+          <h4>Understanding Risk, Fear & Money Psychology</h4>
+          <div class="meta"><div class="small">Duration: 22m • Jan 02, 2025</div><div class="tag">Video</div></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- DOWNLOADS -->
+    <section id="downloads" class="tab-content" style="display:none">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="file-row">
+          <div class="file-name">📄 Presentation — Portfolio Basics.pdf</div>
+          <div class="file-actions"><a class="btn" href="#">Download</a></div>
+        </div>
+        <div class="file-row">
+          <div class="file-name">📄 Chapter 1 — The Journey.pdf</div>
+          <div class="file-actions"><a class="btn" href="#">Download</a></div>
+        </div>
+        <div class="file-row">
+          <div class="file-name">📄 Compounding Calculator.xlsx</div>
+          <div class="file-actions"><a class="btn" href="#">Download</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARTICLES -->
+    <section id="articles" class="tab-content" style="display:none">
+      <div class="grid">
+        <article class="card">
+          <h4>Why We Invest: Real Value > Nominal Value</h4>
+          <p class="article-snippet">A clear breakdown of nominal vs actual value, inflation and how to preserve purchasing power in Nigeria. (Read more)</p>
+          <div class="meta"><div class="small">Jan 15, 2025</div><div class="tag">Article</div></div>
+        </article>
+
+        <article class="card">
+          <h4>Types of Investment Approaches — Analytical Guide</h4>
+          <p class="article-snippet">Structured comparison: conservative, balanced and aggressive portfolios with worked examples. (Read more)</p>
+          <div class="meta"><div class="small">Jan 08, 2025</div><div class="tag">Article</div></div>
+        </article>
+
+        <article class="card">
+          <h4>Compounding Interest — 7-Year Plan Example</h4>
+          <p class="article-snippet">Concrete example showing 50% annual return assumptions on ₦500,000 across 7 years. (Read more)</p>
+          <div class="meta"><div class="small">Dec 30, 2024</div><div class="tag">Article</div></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- QUICK TIPS -->
+    <section id="tips" class="tab-content" style="display:none">
+      <div style="display:grid;gap:12px">
+        <div class="tip"><strong>Tip:</strong> Don’t chase trending tickers. Enter when the market is cold — patience matters.</div>
+        <div class="tip"><strong>Tip:</strong> Use limit orders for initial entries to avoid buying at spikes.</div>
+        <div class="tip"><strong>Tip:</strong> Keep a trade journal — record reasons to enter/exit every position.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="footer">Want this to be interactive (video hosting, file uploads, comments)? I can wire this to a CMS or add embed players next.</div>
+
+  <script>
+    function openTab(id){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(s=>s.style.display='none');
+      document.querySelectorAll('.tab[data-tab="'+id+'"], .tab[data-tab]');
+      // set active tab button
+      document.querySelectorAll('.tab').forEach(b=>{ if(b.dataset.tab===id) b.classList.add('active') });
+      // show section
+      const el=document.getElementById(id);
+      if(el) el.style.display='block';
+      window.scrollTo({top:document.querySelector('.hero').offsetTop-10,behavior:'smooth'});
+    }
+  </script>
+</body>
+</html>

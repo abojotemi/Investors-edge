@@ -1,0 +1,227 @@
+<!-- home.html file -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Titan Investors</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #ffffff;
+      color: #000000;
+      scroll-behavior: smooth;
+    }
+    header {
+      background-color: #000000;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header a {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(81,185,163,0.3), rgba(0,0,0,0.6));
+      z-index: 0;
+    }
+    header img, header h1, header p {
+      position: relative;
+      z-index: 3;
+      pointer-events: none;
+    }
+    header img {
+      max-width: 200px;
+      margin-bottom: 20px;
+      animation: bounceIn 2s ease;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 3em;
+      animation: slideInFromLeft 2s ease;
+    }
+    header p {
+      margin: 15px 0 0;
+      color: #51b9a3;
+      font-size: 1.5em;
+      animation: slideInFromRight 2s ease;
+    }
+    section {
+      padding: 80px 20px;
+      text-align: center;
+      transition: all 0.3s ease-in-out;
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .teal-section {
+      background-color: #51b9a3;
+      color: #ffffff;
+    }
+    .teal-link {
+      display: block;
+      width: 100%;
+      height: 100%;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 2em;
+      font-weight: bold;
+      text-align: center;
+      padding: 60px 20px;
+      transition: background 0.3s ease;
+    }
+    .teal-link:hover {
+      background-color: #3d9482;
+    }
+    .black-section {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    h2 {
+      margin-bottom: 20px;
+      font-size: 2em;
+    }
+    footer {
+      background-color: #000000;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9em;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+    footer.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Animations */
+    @keyframes bounceIn {
+      0% { opacity: 0; transform: scale(0.3); }
+      50% { opacity: 1; transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+    @keyframes slideInFromLeft {
+      from { opacity: 0; transform: translateX(-100%); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideInFromRight {
+      from { opacity: 0; transform: translateX(100%); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Stock Updates Page */
+    .stock-list {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .stock-item {
+      width: 80%;
+      background: linear-gradient(135deg, #ffffff, #f0fdfb);
+      color: #000000;
+      border: 3px solid #51b9a3;
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.2em;
+      display: block;
+    }
+    .stock-item:hover {
+      transform: translateY(-8px) scale(1.02);
+      background: linear-gradient(135deg, #f0fdfb, #e6f9f5);
+      box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="community.html">
+      <img src="Titan Investors Logo.png" alt="Titan Investors Logo">
+      <h1>TITAN INVESTORS</h1>
+      <p>Knowledge First, Profit Next</p>
+    </a>
+  </header>
+
+  <section class="teal-section">
+    <a href="stocks.html" class="teal-link">📊 Latest Stock Update</a>
+  </section>
+      <section>
+        <h2>📘 Learning Hub</h2>
+    <p>What is a Stock? | What is a Broker? | Limit vs Market Order</p>
+  </section>
+ </a>
+
+  <section class="black-section">
+    <h2>🌍 Market Insights</h2>
+    <p>Weekly Recaps | Sector Watch | Macro Events</p>
+  </section>
+
+  <section class="teal-section">
+    <h2>🤝 About Titan Investors</h2>
+    <p>Building disciplined investors through knowledge and strategy for long-term wealth.</p>
+  </section>
+
+  <footer>
+    <p>© 2025 Titan Investors | Knowledge First, Profit Next</p>
+  </footer>
+
+  <script>
+    const sections = document.querySelectorAll('section');
+    const footer = document.querySelector('footer');
+    const revealOnScroll = () => {
+      const triggerBottom = window.innerHeight * 0.85;
+      sections.forEach(section => {
+        const sectionTop = section.getBoundingClientRect().top;
+        if(sectionTop < triggerBottom) {
+          section.classList.add('visible');
+        }
+      });
+      const footerTop = footer.getBoundingClientRect().top;
+      if(footerTop < window.innerHeight * 0.95) {
+        footer.classList.add('visible');
+      }
+    };
+    window.addEventListener('scroll', revealOnScroll);
+    window.addEventListener('load', revealOnScroll);
+  </script>
+</body>
+</html>

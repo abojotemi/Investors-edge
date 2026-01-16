@@ -167,18 +167,18 @@ const CTASection = () => {
                 size="lg"
                 className="bg-white text-primary-green hover:bg-white/90 px-8 py-6 text-lg font-semibold shadow-xl transition-all hover:shadow-2xl"
               >
-                Start Investing Free
+                Start Investing For Free
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-              <Button
+              {/* <Button
                 variant="outline"
                 size="lg"
                 className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold transition-all bg-transparent"
               >
                 Watch How It Works
-              </Button>
+              </Button> */}
             </motion.div>
           </motion.div>
 
