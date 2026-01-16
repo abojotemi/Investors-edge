@@ -144,7 +144,6 @@ export default function StocksPage() {
         </div>
       </section>
 
-      <PageFooter />
     </div>
   );
 }
