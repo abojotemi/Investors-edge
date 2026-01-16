@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, BarChart3, TrendingUp, Users } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const Hero = () => {
   return (
@@ -160,6 +161,7 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
             className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
           >
+            <Link href="/login">
             <Button
               size="lg"
               className="bg-primary-green hover:bg-primary-green/90 text-white px-10 py-7 text-lg font-semibold shadow-lg shadow-primary-green/25 transition-all hover:shadow-xl hover:shadow-primary-green/30 hover:-translate-y-0.5"
@@ -167,6 +169,7 @@ const Hero = () => {
               Join our community
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
+            </Link>
           </motion.div>
 
           {/* Trust indicators */}
