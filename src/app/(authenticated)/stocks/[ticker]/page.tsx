@@ -521,7 +521,6 @@ export default function StockDetailPage() {
         </motion.div>
       </div>
 
-      <PageFooter />
     </div>
   );
 }
