@@ -18,12 +18,17 @@ import {
   addArticle as createArticle,
   updateArticle as modifyArticle,
   deleteArticle as removeArticle,
+  getStocks,
+  addStock as createStock,
+  updateStock as modifyStock,
+  deleteStock as removeStock,
   bulkUpdateStatus as updateStatusBulk,
   bulkDelete as deleteBulk,
 } from "@/lib/firebase/firestore";
 import type {
   Video,
   Article,
+  Stock,
   AdminUser,
   DashboardStats,
   ContentStatus,
@@ -36,6 +41,7 @@ interface AdminContextType {
   adminUser: AdminUser | null;
   videos: Video[];
   articles: Article[];
+  stocks: Stock[];
   stats: DashboardStats;
   loading: boolean;
   // Video operations
@@ -52,6 +58,13 @@ interface AdminContextType {
   updateArticle: (id: string, article: Partial<Article>) => Promise<void>;
   deleteArticle: (id: string) => Promise<void>;
   getArticle: (id: string) => Article | undefined;
+  // Stock operations
+  addStock: (
+    stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
+  ) => Promise<void>;
+  updateStock: (id: string, stock: Partial<Stock>) => Promise<void>;
+  deleteStock: (id: string) => Promise<void>;
+  getStock: (id: string) => Stock | undefined;
   // Bulk operations
   bulkUpdateStatus: (
     type: "video" | "article",
@@ -62,6 +75,7 @@ interface AdminContextType {
   // Refresh data
   refreshVideos: () => Promise<void>;
   refreshArticles: () => Promise<void>;
+  refreshStocks: () => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -89,6 +103,7 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
   const [dataLoading, setDataLoading] = useState(true);
   const [videos, setVideos] = useState<Video[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
+  const [stocks, setStocks] = useState<Stock[]>([]);
 
   // Derive admin state from auth context using useMemo to avoid unnecessary re-renders
   const isAdmin = useMemo(
@@ -135,6 +150,16 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     }
   }, []);
 
+  // Fetch stocks from Firestore
+  const refreshStocks = useCallback(async () => {
+    try {
+      const fetchedStocks = await getStocks();
+      setStocks(fetchedStocks);
+    } catch (error) {
+      console.error("Error fetching stocks:", error);
+    }
+  }, []);
+
   // Initial data fetch - using IIFE pattern to avoid lint warnings
   useEffect(() => {
     let isMounted = true;
@@ -142,7 +167,11 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     (async () => {
       if (!authLoading && isAdmin) {
         setDataLoading(true);
-        await Promise.all([refreshVideos(), refreshArticles()]);
+        await Promise.all([
+          refreshVideos(),
+          refreshArticles(),
+          refreshStocks(),
+        ]);
         if (isMounted) {
           setDataLoading(false);
         }
@@ -154,7 +183,7 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     return () => {
       isMounted = false;
     };
-  }, [authLoading, isAdmin, refreshVideos, refreshArticles]);
+  }, [authLoading, isAdmin, refreshVideos, refreshArticles, refreshStocks]);
 
   // Combine loading states
   const loading = authLoading || dataLoading;
@@ -163,6 +192,7 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
   const stats: DashboardStats = {
     totalVideos: videos.length,
     totalArticles: articles.length,
+    totalStocks: stocks.length,
     publishedContent:
       videos.filter((v) => v.status === "published").length +
       articles.filter((a) => a.status === "published").length,
@@ -215,6 +245,28 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     return articles.find((article) => article.id === id);
   };
 
+  // Stock operations
+  const addStock = async (
+    stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
+  ) => {
+    await createStock(stock);
+    await refreshStocks();
+  };
+
+  const updateStock = async (id: string, updates: Partial<Stock>) => {
+    await modifyStock(id, updates);
+    await refreshStocks();
+  };
+
+  const deleteStock = async (id: string) => {
+    await removeStock(id);
+    await refreshStocks();
+  };
+
+  const getStock = (id: string) => {
+    return stocks.find((stock) => stock.id === id);
+  };
+
   // Bulk operations
   const bulkUpdateStatus = async (
     type: "video" | "article",
@@ -245,6 +297,7 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     adminUser,
     videos,
     articles,
+    stocks,
     stats,
     loading,
     addVideo,
@@ -255,10 +308,15 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     updateArticle,
     deleteArticle,
     getArticle,
+    addStock,
+    updateStock,
+    deleteStock,
+    getStock,
     bulkUpdateStatus,
     bulkDelete,
     refreshVideos,
     refreshArticles,
+    refreshStocks,
   };
 
   return (

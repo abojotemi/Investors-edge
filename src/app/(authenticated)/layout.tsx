@@ -3,7 +3,9 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
+import { ContentProvider } from "@/context/content-context";
 import PageFooter from "@/components/ui/page-footer";
+
 export default function AuthenticatedLayout({
   children,
 }: {
@@ -35,7 +37,10 @@ export default function AuthenticatedLayout({
     return null;
   }
 
-  return <>{children}
-  <PageFooter/>
-  </>;
+  return (
+    <ContentProvider>
+      {children}
+      <PageFooter />
+    </ContentProvider>
+  );
 }

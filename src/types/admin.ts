@@ -90,6 +90,51 @@ export interface AdminUser {
 export interface DashboardStats {
   totalVideos: number;
   totalArticles: number;
+  totalStocks: number;
   publishedContent: number;
   draftContent: number;
+}
+
+// Stock Types
+export type StockStatus = "active" | "watchlist" | "closed";
+export type StockMarket = "US" | "NGX"; // US stocks or Nigerian Stock Exchange
+
+export type StockSector =
+  | "banking"
+  | "insurance"
+  | "construction"
+  | "industrial-goods"
+  | "consumer-goods"
+  | "oil-gas"
+  | "technology"
+  | "agriculture"
+  | "healthcare"
+  | "real-estate"
+  | "other";
+
+export interface StockHighlight {
+  title: string;
+  description: string;
+  icon: "check" | "down" | "up";
+}
+
+export interface StockTradeSetup {
+  buyRange: string;
+  targetProfit: string;
+  riskPrice: string;
+}
+
+export interface Stock {
+  id: string;
+  name: string;
+  ticker: string;
+  market: StockMarket;
+  sector: StockSector;
+  status: StockStatus;
+  analysis: string[];
+  highlights: StockHighlight[];
+  tradeSetup: StockTradeSetup;
+  createdAt: Date;
+  updatedAt: Date;
+  author: string;
 }

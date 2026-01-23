@@ -14,12 +14,38 @@ import {
   EyeOff,
   FileText,
   Clock,
-  CheckSquare,
-  Square,
   Archive,
 } from "lucide-react";
 import { useAdmin } from "@/context/admin-context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import type { ContentStatus } from "@/types/admin";
 
@@ -61,7 +87,6 @@ export default function ArticlesPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
     null
   );
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   // Filter articles
   const filteredArticles = articles.filter((article) => {
@@ -144,13 +169,17 @@ export default function ArticlesPage() {
     }
   };
 
-  const getStatusBadge = (status: ContentStatus) => {
-    const styles = {
-      published: "bg-green-100 text-green-700",
-      draft: "bg-yellow-100 text-yellow-700",
-      archived: "bg-gray-100 text-gray-700",
-    };
-    return styles[status];
+  const getStatusVariant = (
+    status: ContentStatus
+  ): "default" | "secondary" | "outline" => {
+    switch (status) {
+      case "published":
+        return "default";
+      case "draft":
+        return "secondary";
+      default:
+        return "outline";
+    }
   };
 
   return (
@@ -166,8 +195,10 @@ export default function ArticlesPage() {
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Articles</h1>
-          <p className="text-gray-600 mt-1">Manage your article content</p>
+          <h1 className="text-3xl font-bold text-foreground">Articles</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage your article content
+          </p>
         </div>
         <Link href="/admin/articles/new">
           <Button className="bg-primary-green hover:bg-primary-green/90">
@@ -178,304 +209,252 @@ export default function ArticlesPage() {
       </motion.div>
 
       {/* Filters */}
-      <motion.div
-        variants={itemVariants}
-        className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"
-      >
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search articles..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none"
-            />
-          </div>
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search articles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
 
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-400" />
-            <div className="flex gap-1">
-              {statusFilters.map((filter) => (
-                <button
-                  key={filter.value}
-                  onClick={() => setStatusFilter(filter.value)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    statusFilter === filter.value
-                      ? "bg-primary-green text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
+              {/* Status Filter */}
+              <div className="flex items-center gap-2">
+                <Filter className="w-5 h-5 text-muted-foreground" />
+                <div className="flex gap-1">
+                  {statusFilters.map((filter) => (
+                    <Button
+                      key={filter.value}
+                      size="sm"
+                      variant={
+                        statusFilter === filter.value ? "default" : "secondary"
+                      }
+                      onClick={() => setStatusFilter(filter.value)}
+                      className={
+                        statusFilter === filter.value
+                          ? "bg-primary-green hover:bg-primary-green/90"
+                          : ""
+                      }
+                    >
+                      {filter.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Bulk Actions */}
-        {selectedIds.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              {selectedIds.length} selected
-            </span>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleBulkStatusChange("published")}
-                className="text-green-600 border-green-200 hover:bg-green-50"
-              >
-                <Eye className="w-4 h-4 mr-1" />
-                Publish
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleBulkStatusChange("draft")}
-                className="text-yellow-600 border-yellow-200 hover:bg-yellow-50"
-              >
-                <EyeOff className="w-4 h-4 mr-1" />
-                Unpublish
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleBulkStatusChange("archived")}
-                className="text-gray-600 border-gray-200 hover:bg-gray-50"
-              >
-                <Archive className="w-4 h-4 mr-1" />
-                Archive
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleBulkDelete}
-                className="text-red-600 border-red-200 hover:bg-red-50"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Delete
-              </Button>
-            </div>
-          </div>
-        )}
+            {/* Bulk Actions */}
+            {selectedIds.length > 0 && (
+              <div className="mt-4 pt-4 border-t flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">
+                  {selectedIds.length} selected
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleBulkStatusChange("published")}
+                    className="text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    Publish
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleBulkStatusChange("draft")}
+                    className="text-yellow-600 border-yellow-200 hover:bg-yellow-50"
+                  >
+                    <EyeOff className="w-4 h-4 mr-1" />
+                    Unpublish
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleBulkStatusChange("archived")}
+                    className="text-muted-foreground"
+                  >
+                    <Archive className="w-4 h-4 mr-1" />
+                    Archive
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleBulkDelete}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Articles Table */}
-      <motion.div
-        variants={itemVariants}
-        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-      >
-        {filteredArticles.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  <th className="px-4 py-3 text-left">
-                    <button
-                      onClick={handleSelectAll}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      {selectedIds.length === filteredArticles.length ? (
-                        <CheckSquare className="w-5 h-5" />
-                      ) : (
-                        <Square className="w-5 h-5" />
-                      )}
-                    </button>
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                    Article
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                    Category
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                    Read Time
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">
-                    Date
-                  </th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-gray-600">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
+      <motion.div variants={itemVariants}>
+        <Card>
+          {filteredArticles.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={
+                        selectedIds.length === filteredArticles.length &&
+                        filteredArticles.length > 0
+                      }
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </TableHead>
+                  <TableHead>Article</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Read Time</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {filteredArticles.map((article) => (
-                  <tr
-                    key={article.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-4">
-                      <button
-                        onClick={() => handleSelect(article.id)}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        {selectedIds.includes(article.id) ? (
-                          <CheckSquare className="w-5 h-5 text-primary-green" />
-                        ) : (
-                          <Square className="w-5 h-5" />
-                        )}
-                      </button>
-                    </td>
-                    <td className="px-4 py-4">
+                  <TableRow key={article.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.includes(article.id)}
+                        onCheckedChange={() => handleSelect(article.id)}
+                      />
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-16 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <FileText className="w-5 h-5 text-gray-400" />
+                        <div className="w-16 h-10 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+                          <FileText className="w-5 h-5 text-muted-foreground" />
                         </div>
                         <div className="min-w-0">
                           <Link
                             href={`/admin/articles/${article.id}`}
-                            className="font-medium text-gray-900 hover:text-primary-green truncate block"
+                            className="font-medium text-foreground hover:text-primary-green truncate block"
                           >
                             {article.title}
                           </Link>
-                          <p className="text-sm text-gray-500 truncate max-w-xs">
+                          <p className="text-sm text-muted-foreground truncate max-w-xs">
                             {article.excerpt}
                           </p>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className="text-sm text-gray-600 capitalize">
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm capitalize">
                         {article.category.replace("-", " ")}
                       </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusBadge(
-                          article.status
-                        )}`}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={getStatusVariant(article.status)}
+                        className="capitalize"
                       >
                         {article.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="w-4 h-4" />
                         {article.readTime}
                       </div>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-600">
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
                       {formatDate(article.createdAt)}
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center justify-end gap-2 relative">
-                        <button
-                          onClick={() =>
-                            setOpenDropdown(
-                              openDropdown === article.id ? null : article.id
-                            )
-                          }
-                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-                        >
-                          <MoreVertical className="w-5 h-5" />
-                        </button>
-
-                        {openDropdown === article.id && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-10"
-                              onClick={() => setOpenDropdown(null)}
-                            />
-                            <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20">
-                              <Link
-                                href={`/admin/articles/${article.id}`}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                onClick={() => setOpenDropdown(null)}
-                              >
-                                <Edit className="w-4 h-4" />
-                                Edit
-                              </Link>
-                              <Link
-                                href={`/insights/${article.slug}`}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                onClick={() => setOpenDropdown(null)}
-                              >
-                                <Eye className="w-4 h-4" />
-                                View
-                              </Link>
-                              <button
-                                onClick={() => {
-                                  setShowDeleteConfirm(article.id);
-                                  setOpenDropdown(null);
-                                }}
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                                Delete
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/articles/${article.id}`}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/learn/articles/${article.slug}`}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              View
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => setShowDeleteConfirm(article.id)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="p-12 text-center">
-            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No articles found
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {searchQuery || statusFilter !== "all"
-                ? "Try adjusting your filters"
-                : "Get started by adding your first article"}
-            </p>
-            <Link href="/admin/articles/new">
-              <Button className="bg-primary-green hover:bg-primary-green/90">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Article
-              </Button>
-            </Link>
-          </div>
-        )}
+              </TableBody>
+            </Table>
+          ) : (
+            <CardContent className="p-12 text-center">
+              <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                No articles found
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {searchQuery || statusFilter !== "all"
+                  ? "Try adjusting your filters"
+                  : "Get started by adding your first article"}
+              </p>
+              <Link href="/admin/articles/new">
+                <Button className="bg-primary-green hover:bg-primary-green/90">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Article
+                </Button>
+              </Link>
+            </CardContent>
+          )}
+        </Card>
       </motion.div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setShowDeleteConfirm(null)}
-          />
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Delete Article
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this article? This action cannot
-                be undone.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteConfirm(null)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => handleDelete(showDeleteConfirm)}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      <AlertDialog
+        open={!!showDeleteConfirm}
+        onOpenChange={() => setShowDeleteConfirm(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Article</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this article? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() =>
+                showDeleteConfirm && handleDelete(showDeleteConfirm)
+              }
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }

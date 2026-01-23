@@ -4,20 +4,33 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Save,
-  Eye,
-  FileText,
-  Trash2,
-  Bold,
-  Italic,
-  List,
-  Link as LinkIcon,
-  Image,
-} from "lucide-react";
+import { ArrowLeft, Save, Eye, FileText, Trash2, Loader2 } from "lucide-react";
 import { useAdmin } from "@/context/admin-context";
+import { getArticle as fetchArticleFromFirebase } from "@/lib/firebase/firestore";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import RichTextEditor from "@/components/ui/rich-text-editor";
+import { FileUpload } from "@/components/ui/file-upload";
 import { toast } from "sonner";
 import type { ArticleCategory, ContentStatus } from "@/types/admin";
 
@@ -40,10 +53,16 @@ export default function EditArticlePage() {
   const router = useRouter();
   const params = useParams();
   const articleId = params.id as string;
-  const { getArticle, updateArticle, deleteArticle } = useAdmin();
+  const {
+    getArticle,
+    updateArticle,
+    deleteArticle,
+    loading: adminLoading,
+  } = useAdmin();
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -60,23 +79,58 @@ export default function EditArticlePage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const article = getArticle(articleId);
-    if (article) {
-      setFormData({
-        title: article.title,
-        excerpt: article.excerpt,
-        content: article.content,
-        featuredImage: article.featuredImage,
-        category: article.category,
-        tags: article.tags.join(", "),
-        status: article.status,
-        readTime: article.readTime,
-        author: article.author,
-      });
-    } else {
-      setNotFound(true);
-    }
-  }, [articleId, getArticle]);
+    const loadArticle = async () => {
+      // First try to get from context (faster if already loaded)
+      const articleFromContext = getArticle(articleId);
+      if (articleFromContext) {
+        setFormData({
+          title: articleFromContext.title,
+          excerpt: articleFromContext.excerpt,
+          content: articleFromContext.content,
+          featuredImage: articleFromContext.featuredImage,
+          category: articleFromContext.category,
+          tags: articleFromContext.tags.join(", "),
+          status: articleFromContext.status,
+          readTime: articleFromContext.readTime,
+          author: articleFromContext.author,
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // If not in context and admin data is still loading, wait
+      if (adminLoading) {
+        return;
+      }
+
+      // If admin data is loaded but article not found in context, fetch from Firebase
+      try {
+        const articleFromFirebase = await fetchArticleFromFirebase(articleId);
+        if (articleFromFirebase) {
+          setFormData({
+            title: articleFromFirebase.title,
+            excerpt: articleFromFirebase.excerpt,
+            content: articleFromFirebase.content,
+            featuredImage: articleFromFirebase.featuredImage,
+            category: articleFromFirebase.category,
+            tags: articleFromFirebase.tags.join(", "),
+            status: articleFromFirebase.status,
+            readTime: articleFromFirebase.readTime,
+            author: articleFromFirebase.author,
+          });
+        } else {
+          setNotFound(true);
+        }
+      } catch (error) {
+        console.error("Error fetching article:", error);
+        setNotFound(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadArticle();
+  }, [articleId, getArticle, adminLoading]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -173,14 +227,23 @@ export default function EditArticlePage() {
     setFormData((prev) => ({ ...prev, readTime: `${minutes} min read` }));
   };
 
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto text-center py-12">
+        <Loader2 className="w-16 h-16 text-primary-green mx-auto mb-4 animate-spin" />
+        <p className="text-muted-foreground">Loading article...</p>
+      </div>
+    );
+  }
+
   if (notFound) {
     return (
       <div className="max-w-4xl mx-auto text-center py-12">
-        <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">
           Article Not Found
         </h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-muted-foreground mb-6">
           The article you&apos;re looking for doesn&apos;t exist.
         </p>
         <Link href="/admin/articles">
@@ -205,13 +268,13 @@ export default function EditArticlePage() {
         <div className="flex items-center gap-4">
           <Link
             href="/admin/articles"
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Edit Article</h1>
-            <p className="text-gray-600 mt-1">Update article details</p>
+            <h1 className="text-3xl font-bold text-foreground">Edit Article</h1>
+            <p className="text-muted-foreground mt-1">Update article details</p>
           </div>
         </div>
         <Button
@@ -229,183 +292,169 @@ export default function EditArticlePage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Title */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Article Title *
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="Enter article title"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none text-lg ${
-                  errors.title ? "border-red-300" : "border-gray-200"
-                }`}
-              />
-              {errors.title && (
-                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-              )}
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <Label htmlFor="title" className="mb-2">
+                  Article Title *
+                </Label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="Enter article title"
+                  className={`text-lg ${errors.title ? "border-red-300" : ""}`}
+                />
+                {errors.title && (
+                  <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Excerpt */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Excerpt *
-              </label>
-              <textarea
-                name="excerpt"
-                value={formData.excerpt}
-                onChange={handleChange}
-                placeholder="Brief summary of the article (shown in previews)"
-                rows={3}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none resize-none ${
-                  errors.excerpt ? "border-red-300" : "border-gray-200"
-                }`}
-              />
-              {errors.excerpt && (
-                <p className="text-red-500 text-sm mt-1">{errors.excerpt}</p>
-              )}
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <Label htmlFor="excerpt" className="mb-2">
+                  Excerpt *
+                </Label>
+                <Textarea
+                  id="excerpt"
+                  name="excerpt"
+                  value={formData.excerpt}
+                  onChange={handleChange}
+                  placeholder="Brief summary of the article (shown in previews)"
+                  rows={3}
+                  className={errors.excerpt ? "border-red-300" : ""}
+                />
+                {errors.excerpt && (
+                  <p className="text-red-500 text-sm mt-1">{errors.excerpt}</p>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Content Editor */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Content *
-                </label>
-                <button
-                  type="button"
-                  onClick={calculateReadTime}
-                  className="text-xs text-primary-green hover:underline"
-                >
-                  Calculate read time
-                </button>
-              </div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Content *</Label>
+                  <button
+                    type="button"
+                    onClick={calculateReadTime}
+                    className="text-xs text-primary-green hover:underline"
+                  >
+                    Calculate read time
+                  </button>
+                </div>
 
-              {/* Simple toolbar */}
-              <div className="flex items-center gap-1 mb-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
-                <button
-                  type="button"
-                  className="p-2 text-gray-600 hover:bg-gray-200 rounded"
-                  title="Bold"
-                >
-                  <Bold className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  className="p-2 text-gray-600 hover:bg-gray-200 rounded"
-                  title="Italic"
-                >
-                  <Italic className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  className="p-2 text-gray-600 hover:bg-gray-200 rounded"
-                  title="List"
-                >
-                  <List className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  className="p-2 text-gray-600 hover:bg-gray-200 rounded"
-                  title="Link"
-                >
-                  <LinkIcon className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  className="p-2 text-gray-600 hover:bg-gray-200 rounded"
-                  title="Image"
-                >
-                  <Image className="w-4 h-4" />
-                </button>
-              </div>
-
-              <textarea
-                name="content"
-                value={formData.content}
-                onChange={handleChange}
-                placeholder="Write your article content here... (Markdown supported)"
-                rows={15}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none resize-none font-mono text-sm ${
-                  errors.content ? "border-red-300" : "border-gray-200"
-                }`}
-              />
-              {errors.content && (
-                <p className="text-red-500 text-sm mt-1">{errors.content}</p>
-              )}
-              <p className="text-sm text-gray-500 mt-2">
-                Supports Markdown formatting
-              </p>
-            </div>
+                <RichTextEditor
+                  value={formData.content}
+                  onChange={(content) => {
+                    setFormData((prev) => ({ ...prev, content }));
+                    if (errors.content) {
+                      setErrors((prev) => ({ ...prev, content: "" }));
+                    }
+                  }}
+                  placeholder="Start writing your article content..."
+                  error={!!errors.content}
+                />
+                {errors.content && (
+                  <p className="text-red-500 text-sm mt-1">{errors.content}</p>
+                )}
+                <p className="text-sm text-muted-foreground mt-2">
+                  Use the toolbar to format text, add headings, lists, links,
+                  and images. Switch between Edit, Split, and Preview modes.
+                </p>
+              </CardContent>
+            </Card>
 
             {/* Featured Image */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Featured Image URL
-              </label>
-              <input
-                type="url"
-                name="featuredImage"
-                value={formData.featuredImage}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none"
-              />
-              <p className="text-sm text-gray-500 mt-2">
-                Recommended size: 1200x630 pixels
-              </p>
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <Label className="mb-2">Featured Image</Label>
+                <FileUpload
+                  type="images"
+                  currentUrl={formData.featuredImage}
+                  onUploadComplete={(url) =>
+                    setFormData((prev) => ({ ...prev, featuredImage: url }))
+                  }
+                  label="Upload Featured Image"
+                />
+                <div className="mt-3">
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Or enter URL directly:
+                  </p>
+                  <Input
+                    type="url"
+                    name="featuredImage"
+                    value={formData.featuredImage}
+                    onChange={handleChange}
+                    placeholder="https://example.com/image.jpg"
+                    className="text-sm"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Recommended size: 1200x630 pixels
+                </p>
+              </CardContent>
+            </Card>
 
             {/* Tags */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tags
-              </label>
-              <input
-                type="text"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                placeholder="investing, finance, tips"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none"
-              />
-              <p className="text-sm text-gray-500 mt-2">
-                Separate tags with commas
-              </p>
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <Label htmlFor="tags" className="mb-2">
+                  Tags
+                </Label>
+                <Input
+                  id="tags"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleChange}
+                  placeholder="investing, finance, tips"
+                />
+                <p className="text-sm text-muted-foreground mt-2">
+                  Separate tags with commas
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Publish Box */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">Publish</h3>
-
-              <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Publish</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <select
-                    name="status"
+                  <Label className="mb-2">Status</Label>
+                  <Select
                     value={formData.status}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none"
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        status: value as ContentStatus,
+                      }))
+                    }
                   >
-                    {statuses.map((status) => (
-                      <option key={status.value} value={status.value}>
-                        {status.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statuses.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex gap-2">
                   <Button
                     type="submit"
-                    className="flex-1 bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    variant="secondary"
+                    className="flex-1"
                     disabled={saving}
                   >
                     <Save className="w-4 h-4 mr-2" />
@@ -421,103 +470,107 @@ export default function EditArticlePage() {
                     Publish
                   </Button>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {/* Category */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">Category</h3>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none"
-              >
-                {categories.map((category) => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Category</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      category: value as ArticleCategory,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
 
             {/* Read Time */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">Read Time</h3>
-              <input
-                type="text"
-                name="readTime"
-                value={formData.readTime}
-                onChange={handleChange}
-                placeholder="5 min read"
-                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none ${
-                  errors.readTime ? "border-red-300" : "border-gray-200"
-                }`}
-              />
-              {errors.readTime && (
-                <p className="text-red-500 text-sm mt-1">{errors.readTime}</p>
-              )}
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Read Time</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Input
+                  name="readTime"
+                  value={formData.readTime}
+                  onChange={handleChange}
+                  placeholder="5 min read"
+                  className={errors.readTime ? "border-red-300" : ""}
+                />
+                {errors.readTime && (
+                  <p className="text-red-500 text-sm mt-1">{errors.readTime}</p>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Preview */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h3 className="font-semibold text-gray-900 mb-4">Preview</h3>
-              <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                {formData.featuredImage ? (
-                  <img
-                    src={formData.featuredImage}
-                    alt="Featured preview"
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                ) : (
-                  <FileText className="w-12 h-12 text-gray-300" />
-                )}
-              </div>
-              <h4 className="font-medium text-gray-900 truncate">
-                {formData.title || "Article Title"}
-              </h4>
-              <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                {formData.excerpt || "Article excerpt will appear here..."}
-              </p>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Preview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center mb-4">
+                  {formData.featuredImage ? (
+                    <img
+                      src={formData.featuredImage}
+                      alt="Featured preview"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <FileText className="w-12 h-12 text-muted-foreground/30" />
+                  )}
+                </div>
+                <h4 className="font-medium text-foreground truncate">
+                  {formData.title || "Article Title"}
+                </h4>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                  {formData.excerpt || "Article excerpt will appear here..."}
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </form>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setShowDeleteConfirm(false)}
-          />
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Delete Article
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this article? This action cannot
-                be undone.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleDelete}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Article</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this article? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }

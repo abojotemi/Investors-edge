@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Shield,
   Home,
+  TrendingUp,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useAdmin, AdminProvider } from "@/context/admin-context";
@@ -35,6 +36,11 @@ const navItems = [
     label: "Articles",
     href: "/admin/articles",
     icon: FileText,
+  },
+  {
+    label: "Stocks",
+    href: "/admin/stocks",
+    icon: TrendingUp,
   },
   {
     label: "Settings",
@@ -58,16 +64,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   // Skip auth check for admin login page
   const isLoginPage = pathname === "/admin/login";
 
-  // TODO: Re-enable admin check after development
-  // useEffect(() => {
-  //   if (!authLoading && !adminLoading && mounted && !isLoginPage) {
-  //     if (!user) {
-  //       router.push("/admin/login");
-  //     } else if (!isAdmin) {
-  //       router.push("/unauthorized");
-  //     }
-  //   }
-  // }, [user, isAdmin, authLoading, adminLoading, router, mounted, isLoginPage]);
+  // Redirect non-admin users
+  useEffect(() => {
+    if (!authLoading && !adminLoading && mounted && !isLoginPage) {
+      if (!user) {
+        router.push("/admin/login");
+      } else if (!isAdmin) {
+        router.push("/unauthorized");
+      }
+    }
+  }, [user, isAdmin, authLoading, adminLoading, router, mounted, isLoginPage]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -91,28 +97,28 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // TODO: Re-enable admin check after development
-  // if (!user || !isAdmin) {
-  //   return (
-  //     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-  //       <div className="text-center">
-  //         <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-  //         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-  //           Access Denied
-  //         </h1>
-  //         <p className="text-gray-600 mb-6">
-  //           You don&apos;t have permission to access this area.
-  //         </p>
-  //         <Link href="/">
-  //           <Button className="bg-primary-green hover:bg-primary-green/90">
-  //             <Home className="w-4 h-4 mr-2" />
-  //             Go Home
-  //           </Button>
-  //         </Link>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  // Show access denied if not admin
+  if (!user || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Access Denied
+          </h1>
+          <p className="text-gray-600 mb-6">
+            You don&apos;t have permission to access this area.
+          </p>
+          <Link href="/">
+            <Button className="bg-primary-green hover:bg-primary-green/90">
+              <Home className="w-4 h-4 mr-2" />
+              Go Home
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">

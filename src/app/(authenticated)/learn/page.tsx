@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState } from "react";
+import Link from "next/link";
 import {
   Video,
   FileText,
@@ -11,12 +12,12 @@ import {
   Clock,
   Calendar,
   BookOpen,
-  Eye,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import PageFooter from "@/components/ui/page-footer";
 import BackgroundCircles from "@/components/ui/background-circles";
+import { useContent } from "@/context/content-context";
 import { cn } from "@/lib/utils";
 
 type TabType = "videos" | "downloads" | "articles" | "tips";
@@ -31,26 +32,6 @@ const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
   { id: "articles", label: "Articles", icon: <FileText className="w-4 h-4" /> },
   { id: "tips", label: "Quick Tips", icon: <Zap className="w-4 h-4" /> },
 ];
-
-type VideoType = {
-  id: number;
-  title: string;
-  description: string;
-  duration: string;
-  views: string;
-  category: string;
-};
-
-type ArticleType = {
-  id: number;
-  title: string;
-  excerpt: string;
-  date: string;
-  readTime: string;
-  category: string;
-};
-
-const videos: VideoType[] = [];
 
 const downloads = [
   {
@@ -97,8 +78,6 @@ const downloads = [
   },
 ];
 
-const articles: ArticleType[] = [];
-
 const tips = [
   "Don't chase trending tickers. Enter when the market is cold — patience matters.",
   "Use limit orders for initial entries to avoid buying at spikes.",
@@ -111,6 +90,21 @@ const tips = [
 ];
 
 const categoryColors: Record<string, string> = {
+  // Video categories
+  beginner: "bg-primary-green text-white",
+  intermediate: "bg-primary-orange text-white",
+  advanced: "bg-red-500 text-white",
+  "market-analysis": "bg-blue-500 text-white",
+  tutorials: "bg-purple-500 text-white",
+  webinars: "bg-indigo-500 text-white",
+  // Article categories
+  "investing-basics": "bg-primary-green text-white",
+  "market-news": "bg-blue-500 text-white",
+  strategies: "bg-primary-orange text-white",
+  "personal-finance": "bg-teal-500 text-white",
+  crypto: "bg-yellow-500 text-black",
+  "real-estate": "bg-amber-600 text-white",
+  // Legacy categories
   "Getting Started": "bg-primary-green text-white",
   "Savings & Budgeting": "bg-primary-orange text-white",
   "Investment Types": "bg-primary-peach text-white",
@@ -120,84 +114,89 @@ const categoryColors: Record<string, string> = {
 
 // Video Card Component matching the home page style
 const VideoCard = ({
+  id,
   title,
   description,
   duration,
-  views,
+  thumbnailUrl,
   category,
   index,
 }: {
+  id: string;
   title: string;
   description: string;
   duration: string;
-  views: string;
+  thumbnailUrl?: string;
   category: string;
   index: number;
 }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      className="group relative bg-card rounded-2xl overflow-hidden shadow-lg border border-border/50 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
-    >
-      {/* Video Thumbnail / Placeholder */}
-      <div className="relative aspect-video bg-gradient-to-br from-primary-green/20 via-primary-orange/10 to-primary-peach/20 overflow-hidden">
-        {/* Placeholder pattern */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_25%,rgba(0,0,0,0.05)_50%,transparent_50%,transparent_75%,rgba(0,0,0,0.05)_75%)] bg-[length:20px_20px]" />
-        </div>
-
-        {/* Play button overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <button className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-white/90 shadow-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-white group-hover:shadow-2xl">
-            <Play className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-primary-green fill-primary-green ml-1" />
-          </button>
-        </div>
-
-        {/* Duration badge */}
-        <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/70 text-white text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          {duration}
-        </div>
-
-        {/* Category badge */}
-        <div
-          className={cn(
-            "absolute top-2 left-2 sm:top-3 sm:left-3 text-xs font-semibold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full",
-            categoryColors[category] || "bg-primary-green text-white"
+    <Link href={`/learn/videos/${id}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+        className="group relative bg-card rounded-2xl overflow-hidden shadow-lg border border-border/50 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
+      >
+        {/* Video Thumbnail / Placeholder */}
+        <div className="relative aspect-video bg-gradient-to-br from-primary-green/20 via-primary-orange/10 to-primary-peach/20 overflow-hidden">
+          {thumbnailUrl ? (
+            <img
+              src={thumbnailUrl}
+              alt={title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            /* Placeholder pattern */
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_25%,rgba(0,0,0,0.05)_50%,transparent_50%,transparent_75%,rgba(0,0,0,0.05)_75%)] bg-[length:20px_20px]" />
+            </div>
           )}
-        >
-          {category}
-        </div>
 
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-primary-green/0 group-hover:bg-primary-green/10 transition-colors duration-300" />
-      </div>
-
-      {/* Content */}
-      <div className="p-4 sm:p-5 md:p-6 space-y-2 sm:space-y-3">
-        <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground line-clamp-2 group-hover:text-primary-green transition-colors">
-          {title}
-        </h3>
-        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-          {description}
-        </p>
-
-        {/* Stats */}
-        <div className="flex items-center gap-4 pt-2 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>{views} views</span>
+          {/* Play button overlay */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <button className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-white/90 shadow-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-white group-hover:shadow-2xl">
+              <Play className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-primary-green fill-primary-green ml-1" />
+            </button>
           </div>
+
+          {/* Duration badge */}
+          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/70 text-white text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {duration}
+          </div>
+
+          {/* Category badge */}
+          <div
+            className={cn(
+              "absolute top-2 left-2 sm:top-3 sm:left-3 text-xs font-semibold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full capitalize",
+              categoryColors[category] || "bg-primary-green text-white"
+            )}
+          >
+            {category.replace("-", " ")}
+          </div>
+
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-primary-green/0 group-hover:bg-primary-green/10 transition-colors duration-300" />
         </div>
-      </div>
-    </motion.div>
+
+        {/* Content */}
+        <div className="p-4 sm:p-5 md:p-6 space-y-2 sm:space-y-3">
+          <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground line-clamp-2 group-hover:text-primary-green transition-colors">
+            {title}
+          </h3>
+          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            {description}
+          </p>
+        </div>
+      </motion.div>
+    </Link>
   );
 };
 
 export default function LearnPage() {
   const [activeTab, setActiveTab] = useState<TabType>("videos");
+  const { videos, articles, loading } = useContent();
 
   return (
     <div className="min-h-screen overflow-x-hidden relative flex flex-col">
@@ -317,21 +316,26 @@ export default function LearnPage() {
             {/* Videos Tab */}
             {activeTab === "videos" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {videos.length !== 0 ? (
+                {loading ? (
+                  <div className="col-span-full flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
+                  </div>
+                ) : videos.length !== 0 ? (
                   videos.map((video, index) => (
                     <VideoCard
                       key={video.id}
+                      id={video.id}
                       title={video.title}
                       description={video.description}
                       duration={video.duration}
-                      views={video.views}
+                      thumbnailUrl={video.thumbnailUrl}
                       category={video.category}
                       index={index}
                     />
                   ))
                 ) : (
                   <div className="text-gray-500 col-span-full text-center py-8">
-                    Coming soon.
+                    No videos available yet. Check back soon!
                   </div>
                 )}
               </div>
@@ -376,60 +380,83 @@ export default function LearnPage() {
             {/* Articles Tab */}
             {activeTab === "articles" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                {articles.length !== 0 ? (
+                {loading ? (
+                  <div className="col-span-full flex justify-center py-12">
+                    <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
+                  </div>
+                ) : articles.length !== 0 ? (
                   articles.map((article, index) => (
-                    <motion.div
+                    <Link
                       key={article.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="group bg-white rounded-2xl overflow-hidden shadow-lg border border-border/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer"
+                      href={`/learn/articles/${article.slug}`}
                     >
-                      {/* Article Header */}
-                      <div className="h-24 sm:h-32 bg-gradient-to-br from-primary-green/10 via-primary-orange/5 to-primary-peach/10 relative overflow-hidden">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-primary-green/30" />
-                        </div>
-                        <div
-                          className={cn(
-                            "absolute top-2 left-2 sm:top-3 sm:left-3 text-xs font-semibold px-2 sm:px-3 py-1 rounded-full",
-                            categoryColors[article.category] ||
-                              "bg-primary-green text-white"
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="group bg-white rounded-2xl overflow-hidden shadow-lg border border-border/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer"
+                      >
+                        {/* Article Header */}
+                        <div className="h-24 sm:h-32 bg-gradient-to-br from-primary-green/10 via-primary-orange/5 to-primary-peach/10 relative overflow-hidden">
+                          {article.featuredImage ? (
+                            <img
+                              src={article.featuredImage}
+                              alt={article.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-primary-green/30" />
+                            </div>
                           )}
-                        >
-                          {article.category}
-                        </div>
-                      </div>
-
-                      <div className="p-4 sm:p-5 md:p-6 space-y-2 sm:space-y-3">
-                        <h3 className="font-bold text-foreground text-base sm:text-lg group-hover:text-primary-green transition-colors line-clamp-2">
-                          {article.title}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                          {article.excerpt}
-                        </p>
-                        <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                            {article.date}
+                          <div
+                            className={cn(
+                              "absolute top-2 left-2 sm:top-3 sm:left-3 text-xs font-semibold px-2 sm:px-3 py-1 rounded-full capitalize",
+                              categoryColors[article.category] ||
+                                "bg-primary-green text-white"
+                            )}
+                          >
+                            {article.category.replace("-", " ")}
                           </div>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                            {article.readTime}
-                          </span>
                         </div>
-                        <div className="pt-2">
-                          <span className="inline-flex items-center gap-1 text-primary-green text-xs sm:text-sm font-semibold group-hover:gap-2 transition-all">
-                            Read More
-                            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                          </span>
+
+                        <div className="p-4 sm:p-5 md:p-6 space-y-2 sm:space-y-3">
+                          <h3 className="font-bold text-foreground text-base sm:text-lg group-hover:text-primary-green transition-colors line-clamp-2">
+                            {article.title}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                            {article.excerpt}
+                          </p>
+                          <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                              {new Date(article.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                }
+                              )}
+                            </div>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                              {article.readTime}
+                            </span>
+                          </div>
+                          <div className="pt-2">
+                            <span className="inline-flex items-center gap-1 text-primary-green text-xs sm:text-sm font-semibold group-hover:gap-2 transition-all">
+                              Read More
+                              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
+                      </motion.div>
+                    </Link>
                   ))
                 ) : (
                   <div className="text-gray-500 col-span-full text-center py-8">
-                    Coming soon.
+                    No articles available yet. Check back soon!
                   </div>
                 )}
               </div>
