@@ -4,10 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 // Get your free API key at: https://finnhub.io/
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY || "";
 
-// Alpha Vantage API (free tier: 25 requests/day, 5/min)
-// Get your free API key at: https://www.alphavantage.co/support/#api-key
-const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY || "demo";
-
 // Nigerian Stock Exchange suffix for Yahoo
 const NSE_SUFFIX = ".LG";
 
