@@ -4,212 +4,314 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import Link from "next/link";
 import {
-  Video,
-  FileText,
-  Zap,
-  Play,
-  Download,
-  Clock,
-  Calendar,
   BookOpen,
-  ArrowRight,
+  Play,
+  Clock,
+  Users,
+  ChevronRight,
   Loader2,
+  GraduationCap,
+  TrendingUp,
+  BarChart3,
+  Target,
+  Wallet,
+  Bitcoin,
+  CheckCircle2,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BackgroundCircles from "@/components/ui/background-circles";
 import { useContent } from "@/context/content-context";
 import { cn } from "@/lib/utils";
+import type { Course, CourseCategory, CourseDifficulty } from "@/types/admin";
 
-type TabType = "videos" | "downloads" | "articles" | "tips";
-
-const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-  { id: "videos", label: "Videos", icon: <Video className="w-4 h-4" /> },
-  // {
-  //   id: "downloads",
-  //   label: "Downloads",
-  //   icon: <FileDown className="w-4 h-4" />,
-  // },
-  { id: "articles", label: "Articles", icon: <FileText className="w-4 h-4" /> },
-  { id: "tips", label: "Quick Tips", icon: <Zap className="w-4 h-4" /> },
-];
-
-const downloads = [
-  {
-    id: 1,
-    name: "Presentation — Portfolio Basics.pdf",
-    type: "PDF",
-    size: "2.4 MB",
-    icon: "📄",
+// Category configuration with colors and icons
+const categoryConfig: Record<
+  CourseCategory,
+  { label: string; color: string; bgColor: string; icon: React.ReactNode }
+> = {
+  "investing-basics": {
+    label: "Investing Basics",
+    color: "text-primary-green",
+    bgColor: "bg-primary-green",
+    icon: <GraduationCap className="w-5 h-5" />,
   },
-  {
-    id: 2,
-    name: "Chapter 1 — The Journey.pdf",
-    type: "PDF",
-    size: "1.8 MB",
-    icon: "📄",
+  "stock-analysis": {
+    label: "Stock Analysis",
+    color: "text-blue-600",
+    bgColor: "bg-blue-500",
+    icon: <BarChart3 className="w-5 h-5" />,
   },
-  {
-    id: 3,
-    name: "Compounding Calculator.xlsx",
-    type: "Excel",
-    size: "156 KB",
-    icon: "📊",
+  "portfolio-management": {
+    label: "Portfolio Management",
+    color: "text-purple-600",
+    bgColor: "bg-purple-500",
+    icon: <Target className="w-5 h-5" />,
   },
-  {
-    id: 4,
-    name: "Stock Analysis Template.xlsx",
-    type: "Excel",
-    size: "245 KB",
-    icon: "📊",
+  "trading-strategies": {
+    label: "Trading Strategies",
+    color: "text-primary-orange",
+    bgColor: "bg-primary-orange",
+    icon: <TrendingUp className="w-5 h-5" />,
   },
-  {
-    id: 5,
-    name: "Investment Checklist.pdf",
-    type: "PDF",
-    size: "890 KB",
-    icon: "📄",
+  "financial-planning": {
+    label: "Financial Planning",
+    color: "text-teal-600",
+    bgColor: "bg-teal-500",
+    icon: <Wallet className="w-5 h-5" />,
   },
-  {
-    id: 6,
-    name: "Budget Tracker Template.xlsx",
-    type: "Excel",
-    size: "320 KB",
-    icon: "📊",
+  crypto: {
+    label: "Cryptocurrency",
+    color: "text-amber-600",
+    bgColor: "bg-amber-500",
+    icon: <Bitcoin className="w-5 h-5" />,
   },
-];
-
-const tips = [
-  "Don't chase trending tickers. Enter when the market is cold — patience matters.",
-  "Use limit orders for initial entries to avoid buying at spikes.",
-  "Keep a trade journal — record reasons to enter/exit every position.",
-  "Diversify across sectors to reduce portfolio risk.",
-  "Set your stop-loss before entering any trade, not after.",
-  "Review your portfolio quarterly, not daily. Avoid emotional decisions.",
-  "Start small and scale up as you gain confidence and knowledge.",
-  "Never invest money you can't afford to lose or may need soon.",
-];
-
-const categoryColors: Record<string, string> = {
-  // Video categories
-  beginner: "bg-primary-green text-white",
-  intermediate: "bg-primary-orange text-white",
-  advanced: "bg-red-500 text-white",
-  "market-analysis": "bg-blue-500 text-white",
-  tutorials: "bg-purple-500 text-white",
-  webinars: "bg-indigo-500 text-white",
-  // Article categories
-  "investing-basics": "bg-primary-green text-white",
-  "market-news": "bg-blue-500 text-white",
-  strategies: "bg-primary-orange text-white",
-  "personal-finance": "bg-teal-500 text-white",
-  crypto: "bg-yellow-500 text-black",
-  "real-estate": "bg-amber-600 text-white",
-  // Legacy categories
-  "Getting Started": "bg-primary-green text-white",
-  "Savings & Budgeting": "bg-primary-orange text-white",
-  "Investment Types": "bg-primary-peach text-white",
-  Fundamentals: "bg-primary-green text-white",
-  Strategy: "bg-primary-orange text-white",
 };
 
-// Video Card Component matching the home page style
-const VideoCard = ({
-  id,
-  title,
-  description,
-  duration,
-  thumbnailUrl,
-  category,
+// Difficulty badge colors
+const difficultyColors: Record<CourseDifficulty, string> = {
+  beginner: "bg-green-100 text-green-700 border-green-200",
+  intermediate: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  advanced: "bg-red-100 text-red-700 border-red-200",
+};
+
+// Course card background colors (like the reference image)
+const cardBgColors = [
+  "bg-gradient-to-br from-amber-100 to-amber-50",
+  "bg-gradient-to-br from-orange-100 to-orange-50",
+  "bg-gradient-to-br from-blue-100 to-blue-50",
+  "bg-gradient-to-br from-red-100 to-red-50",
+  "bg-gradient-to-br from-green-100 to-green-50",
+  "bg-gradient-to-br from-purple-100 to-purple-50",
+];
+
+// Sidebar navigation items
+const sidebarItems = [
+  { id: "all", label: "All Courses", icon: <BookOpen className="w-4 h-4" /> },
+  {
+    id: "in-progress",
+    label: "In Progress",
+    icon: <Play className="w-4 h-4" />,
+  },
+  {
+    id: "completed",
+    label: "Completed",
+    icon: <CheckCircle2 className="w-4 h-4" />,
+  },
+];
+
+// Course Card Component
+const CourseCard = ({
+  course,
+  progress,
   index,
 }: {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  thumbnailUrl?: string;
-  category: string;
+  course: Course;
+  progress?: { percent: number; isCompleted: boolean };
   index: number;
 }) => {
+  const config = categoryConfig[course.category];
+  const bgColor = cardBgColors[index % cardBgColors.length];
+
   return (
-    <Link href={`/learn/videos/${id}`}>
+    <Link href={`/learn/${course.id}`}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.1 }}
-        className="group relative bg-card rounded-2xl overflow-hidden shadow-lg border border-border/50 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
+        className={cn(
+          "group relative rounded-2xl overflow-hidden shadow-lg border border-border/30 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1",
+          bgColor
+        )}
       >
-        {/* Video Thumbnail / Placeholder */}
-        <div className="relative aspect-video bg-gradient-to-br from-primary-green/20 via-primary-orange/10 to-primary-peach/20 overflow-hidden">
-          {thumbnailUrl ? (
-            <img
-              src={thumbnailUrl}
-              alt={title}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            /* Placeholder pattern */
-            <div className="absolute inset-0 opacity-30">
-              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_25%,rgba(0,0,0,0.05)_50%,transparent_50%,transparent_75%,rgba(0,0,0,0.05)_75%)] bg-[length:20px_20px]" />
+        {/* Card Header with Icon */}
+        <div className="p-5 pb-3">
+          <div className="flex items-start justify-between mb-4">
+            {/* Course Icon */}
+            <div
+              className={cn(
+                "w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg",
+                config.bgColor
+              )}
+            >
+              {config.icon}
             </div>
-          )}
 
-          {/* Play button overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <button className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-white/90 shadow-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-white group-hover:shadow-2xl">
-              <Play className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-primary-green fill-primary-green ml-1" />
-            </button>
+            {/* Enrolled Count */}
+            <div className="flex items-center gap-1 text-xs text-muted-foreground bg-white/80 px-2 py-1 rounded-full">
+              <Users className="w-3 h-3" />
+              <span>{course.enrolledCount}</span>
+            </div>
           </div>
 
-          {/* Duration badge */}
-          <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-black/70 text-white text-xs font-medium px-2 py-1 rounded-md flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {duration}
+          {/* Course Title */}
+          <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2 group-hover:text-primary-green transition-colors">
+            {course.title}
+          </h3>
+
+          {/* Course Description */}
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+            {course.description}
+          </p>
+
+          {/* Course Meta */}
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
+            <div className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{course.totalDuration}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>{course.lessons.length} lessons</span>
+            </div>
           </div>
 
-          {/* Category badge */}
+          {/* Difficulty Badge */}
           <div
             className={cn(
-              "absolute top-2 left-2 sm:top-3 sm:left-3 text-xs font-semibold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full capitalize",
-              categoryColors[category] || "bg-primary-green text-white"
+              "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border capitalize",
+              difficultyColors[course.difficulty]
             )}
           >
-            {category.replace("-", " ")}
+            {course.difficulty}
           </div>
-
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-primary-green/0 group-hover:bg-primary-green/10 transition-colors duration-300" />
         </div>
 
-        {/* Content */}
-        <div className="p-4 sm:p-5 md:p-6 space-y-2 sm:space-y-3">
-          <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground line-clamp-2 group-hover:text-primary-green transition-colors">
-            {title}
-          </h3>
-          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-            {description}
-          </p>
+        {/* Progress Section */}
+        <div className="px-5 pb-5">
+          {progress ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Progress</span>
+                <span className="font-semibold text-foreground">
+                  {progress.percent}%
+                </span>
+              </div>
+              <div className="h-2 bg-white/50 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress.percent}%` }}
+                  transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
+                  className={cn(
+                    "h-full rounded-full",
+                    progress.isCompleted
+                      ? "bg-primary-green"
+                      : "bg-primary-orange"
+                  )}
+                />
+              </div>
+              {progress.isCompleted && (
+                <div className="flex items-center gap-1 text-xs text-primary-green font-medium">
+                  <Award className="w-3.5 h-3.5" />
+                  <span>Completed</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              className="w-full bg-white hover:bg-white/90 text-foreground border border-border/50 shadow-sm group-hover:border-primary-green group-hover:text-primary-green transition-colors"
+            >
+              Start Course
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          )}
         </div>
+
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-primary-green/0 group-hover:bg-primary-green/5 transition-colors pointer-events-none" />
       </motion.div>
     </Link>
   );
 };
 
+// Stats Card Component
+const StatsCard = ({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  color: string;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    className="bg-white rounded-xl p-4 shadow-lg border border-border/50"
+  >
+    <div className="flex items-center gap-3">
+      <div
+        className={cn(
+          "w-10 h-10 rounded-lg flex items-center justify-center text-white",
+          color
+        )}
+      >
+        {icon}
+      </div>
+      <div>
+        <p className="text-2xl font-bold text-foreground">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
+      </div>
+    </div>
+  </motion.div>
+);
+
 export default function LearnPage() {
-  const [activeTab, setActiveTab] = useState<TabType>("videos");
-  const { videos, articles, loading } = useContent();
+  const [activeFilter, setActiveFilter] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] =
+    useState<CourseCategory | null>(null);
+  const { courses, loading, getCourseProgress, userProgress } = useContent();
+
+  // Calculate stats
+  const inProgressCount = Array.from(userProgress.values()).filter(
+    (p) => p.progressPercent > 0 && p.progressPercent < 100
+  ).length;
+  const completedCount = Array.from(userProgress.values()).filter(
+    (p) => p.progressPercent >= 100
+  ).length;
+
+  // Filter courses based on active filter and category
+  const filteredCourses = courses.filter((course) => {
+    // Category filter
+    if (selectedCategory && course.category !== selectedCategory) {
+      return false;
+    }
+
+    // Status filter
+    if (activeFilter === "in-progress") {
+      const progress = getCourseProgress(course.id);
+      return progress && progress.progressPercent > 0 && progress.progressPercent < 100;
+    }
+    if (activeFilter === "completed") {
+      const progress = getCourseProgress(course.id);
+      return progress && progress.progressPercent >= 100;
+    }
+
+    return true;
+  });
+
+  // Get the current date formatted
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return (
     <div className="min-h-screen overflow-x-hidden relative flex flex-col">
       <BackgroundCircles variant="dense" />
-      {/* Hero Section */}
-      <section className="relative py-8 sm:py-12 md:py-16 px-4 bg-gradient-to-br from-primary-peach/10 via-background to-primary-green/10 overflow-hidden flex-1">
+
+      <section className="relative py-6 sm:py-8 md:py-10 px-4 bg-gradient-to-br from-primary-peach/5 via-background to-primary-green/5 overflow-hidden flex-1">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
-            className="absolute top-0 left-1/4 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-primary-green/20 rounded-full blur-3xl"
+            className="absolute top-0 left-1/4 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-primary-green/15 rounded-full blur-3xl"
             animate={{
               scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
+              opacity: [0.2, 0.4, 0.2],
             }}
             transition={{
               duration: 8,
@@ -218,10 +320,10 @@ export default function LearnPage() {
             }}
           />
           <motion.div
-            className="absolute bottom-0 right-1/4 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-primary-orange/20 rounded-full blur-3xl"
+            className="absolute bottom-0 right-1/4 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 bg-primary-orange/15 rounded-full blur-3xl"
             animate={{
               scale: [1, 1.3, 1],
-              opacity: [0.2, 0.4, 0.2],
+              opacity: [0.15, 0.3, 0.15],
             }}
             transition={{
               duration: 6,
@@ -230,295 +332,269 @@ export default function LearnPage() {
               delay: 1,
             }}
           />
-          <div className="absolute top-1/2 right-10 w-24 sm:w-36 md:w-48 h-24 sm:h-36 md:h-48 bg-primary-peach/15 rounded-full blur-2xl" />
-          <div className="absolute bottom-20 left-10 w-20 sm:w-30 md:w-40 h-20 sm:h-30 md:h-40 bg-primary-green/15 rounded-full blur-2xl" />
         </div>
 
-        <div className="relative container mx-auto max-w-6xl">
-          {/* Section Header */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 space-y-3 sm:space-y-4"
-          >
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-primary-orange/20 to-primary-orange/10 text-primary-orange rounded-full text-xs sm:text-sm font-medium border border-primary-orange/20 shadow-sm">
-              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>Learning Hub</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
-              <span className="text-foreground">Resources, Videos </span>
-              <span className="bg-gradient-to-r from-primary-green to-primary-peach bg-clip-text text-transparent">
-                & Guides
-              </span>
-            </h1>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed px-4">
-              A central place to watch lessons, download files and read
-              write-ups. Everything you need to build disciplined investing
-              skills.
-            </p>
-          </motion.div>
-
-          {/* Hero CTA Buttons
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex flex-wrap justify-center gap-3 mb-8 sm:mb-10 md:mb-12"
-          >
-            <Button
-              onClick={() => setActiveTab("videos")}
-              className="bg-primary-green hover:bg-primary-green/90 text-white text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              Watch Videos
-            </Button>
-            <Button
-              onClick={() => setActiveTab("downloads")}
-              variant="outline"
-              className="border-2 border-primary-green/20 hover:bg-primary-green/5 text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Downloads
-            </Button>
-          </motion.div> */}
-
-          {/* Tabs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-10 md:mb-12"
-          >
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300",
-                  activeTab === tab.id
-                    ? "bg-gradient-to-r from-primary-green to-primary-green/80 text-white shadow-lg shadow-primary-green/20"
-                    : "bg-white text-muted-foreground hover:text-foreground border border-border/50"
-                )}
+        <div className="relative container mx-auto max-w-7xl">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+            {/* Sidebar */}
+            <aside className="lg:w-64 flex-shrink-0">
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-white rounded-2xl shadow-lg border border-border/50 p-4 sticky top-24"
               >
-                {tab.icon}
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </motion.div>
-
-          {/* Tab Content */}
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {/* Videos Tab */}
-            {activeTab === "videos" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {loading ? (
-                  <div className="col-span-full flex justify-center py-12">
-                    <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
+                {/* Logo/Brand */}
+                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-border/50">
+                  <div className="w-8 h-8 rounded-lg bg-primary-green flex items-center justify-center">
+                    <GraduationCap className="w-5 h-5 text-white" />
                   </div>
-                ) : videos.length !== 0 ? (
-                  videos.map((video, index) => (
-                    <VideoCard
-                      key={video.id}
-                      id={video.id}
-                      title={video.title}
-                      description={video.description}
-                      duration={video.duration}
-                      thumbnailUrl={video.thumbnailUrl}
-                      category={video.category}
-                      index={index}
-                    />
-                  ))
-                ) : (
-                  <div className="text-gray-500 col-span-full text-center py-8">
-                    No videos available yet. Check back soon!
-                  </div>
-                )}
-              </div>
-            )}
+                  <span className="font-bold text-lg text-foreground">
+                    Courses
+                  </span>
+                </div>
 
-            {/* Downloads Tab */}
-            {activeTab === "downloads" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {downloads.map((file, index) => (
-                  <motion.div
-                    key={file.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="group bg-white rounded-xl p-4 sm:p-5 shadow-lg border border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                  >
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary-green/20 to-primary-green/10 flex items-center justify-center text-xl sm:text-2xl flex-shrink-0">
-                        {file.icon}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-foreground text-sm sm:text-base truncate group-hover:text-primary-green transition-colors">
-                          {file.name}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          {file.type} • {file.size}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      className="bg-primary-green hover:bg-primary-green/90 text-white w-full sm:w-auto"
+                {/* Navigation */}
+                <nav className="space-y-1 mb-6">
+                  {sidebarItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveFilter(item.id);
+                        setSelectedCategory(null);
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                        activeFilter === item.id && !selectedCategory
+                          ? "bg-primary-green/10 text-primary-green"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      )}
                     >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </Button>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+                      {item.icon}
+                      <span>{item.label}</span>
+                      {item.id === "in-progress" && inProgressCount > 0 && (
+                        <span className="ml-auto bg-primary-orange/20 text-primary-orange text-xs px-2 py-0.5 rounded-full">
+                          {inProgressCount}
+                        </span>
+                      )}
+                      {item.id === "completed" && completedCount > 0 && (
+                        <span className="ml-auto bg-primary-green/20 text-primary-green text-xs px-2 py-0.5 rounded-full">
+                          {completedCount}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </nav>
 
-            {/* Articles Tab */}
-            {activeTab === "articles" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                {loading ? (
-                  <div className="col-span-full flex justify-center py-12">
-                    <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
-                  </div>
-                ) : articles.length !== 0 ? (
-                  articles.map((article, index) => (
-                    <Link
-                      key={article.id}
-                      href={`/learn/articles/${article.slug}`}
-                    >
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="group bg-white rounded-2xl overflow-hidden shadow-lg border border-border/50 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer"
+                {/* Categories */}
+                <div className="pt-4 border-t border-border/50">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                    Categories
+                  </p>
+                  <nav className="space-y-1">
+                    {Object.entries(categoryConfig).map(([key, config]) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          setSelectedCategory(key as CourseCategory);
+                          setActiveFilter("all");
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all",
+                          selectedCategory === key
+                            ? "bg-primary-green/10 text-primary-green font-medium"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        )}
                       >
-                        {/* Article Header */}
-                        <div className="h-24 sm:h-32 bg-gradient-to-br from-primary-green/10 via-primary-orange/5 to-primary-peach/10 relative overflow-hidden">
-                          {article.featuredImage ? (
-                            <img
-                              src={article.featuredImage}
-                              alt={article.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-primary-green/30" />
-                            </div>
+                        <div
+                          className={cn(
+                            "w-6 h-6 rounded-md flex items-center justify-center text-white text-xs",
+                            config.bgColor
                           )}
-                          <div
-                            className={cn(
-                              "absolute top-2 left-2 sm:top-3 sm:left-3 text-xs font-semibold px-2 sm:px-3 py-1 rounded-full capitalize",
-                              categoryColors[article.category] ||
-                                "bg-primary-green text-white"
-                            )}
-                          >
-                            {article.category.replace("-", " ")}
-                          </div>
+                        >
+                          {config.icon}
                         </div>
+                        <span className="truncate">{config.label}</span>
+                      </button>
+                    ))}
+                  </nav>
+                </div>
 
-                        <div className="p-4 sm:p-5 md:p-6 space-y-2 sm:space-y-3">
-                          <h3 className="font-bold text-foreground text-base sm:text-lg group-hover:text-primary-green transition-colors line-clamp-2">
-                            {article.title}
-                          </h3>
-                          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                            {article.excerpt}
-                          </p>
-                          <div className="flex items-center justify-between pt-2 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                              {new Date(article.createdAt).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                }
-                              )}
-                            </div>
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                              {article.readTime}
-                            </span>
-                          </div>
-                          <div className="pt-2">
-                            <span className="inline-flex items-center gap-1 text-primary-green text-xs sm:text-sm font-semibold group-hover:gap-2 transition-all">
-                              Read More
-                              <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                            </span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </Link>
-                  ))
-                ) : (
-                  <div className="text-gray-500 col-span-full text-center py-8">
-                    No articles available yet. Check back soon!
-                  </div>
-                )}
-              </div>
-            )}
+                {/* Upgrade Card (like reference) */}
+                {/* <div className="mt-6 p-4 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl text-white">
+                  <p className="text-xs text-slate-300 mb-1">
+                    Upgrade your plan
+                  </p>
+                  <p className="text-sm font-semibold mb-3">Pro Plan</p>
+                  <div className="w-8 h-1 bg-primary-green rounded-full" />
+                </div> */}
+              </motion.div>
+            </aside>
 
-            {/* Tips Tab */}
-            {activeTab === "tips" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {tips.map((tip, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="group bg-gradient-to-br from-white to-primary-green/5 rounded-xl p-4 sm:p-5 shadow-lg border border-primary-green/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            {/* Main Content */}
+            <main className="flex-1 min-w-0">
+              {/* Header */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"
+              >
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
+                    Course Activity
+                  </h1>
+                  <p className="text-sm text-muted-foreground">{currentDate}</p>
+                </div>
+
+                {/* Add Course Button (for future admin use) */}
+                <Button
+                  size="sm"
+                  className="bg-primary-green hover:bg-primary-green/90 text-white self-start sm:self-auto"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Browse All
+                </Button>
+              </motion.div>
+
+              {/* Stats Row */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6"
+              >
+                <StatsCard
+                  icon={<BookOpen className="w-5 h-5" />}
+                  label="Total Courses"
+                  value={courses.length}
+                  color="bg-primary-green"
+                />
+                <StatsCard
+                  icon={<Play className="w-5 h-5" />}
+                  label="In Progress"
+                  value={inProgressCount}
+                  color="bg-primary-orange"
+                />
+                <StatsCard
+                  icon={<CheckCircle2 className="w-5 h-5" />}
+                  label="Completed"
+                  value={completedCount}
+                  color="bg-blue-500"
+                />
+                <StatsCard
+                  icon={<Award className="w-5 h-5" />}
+                  label="Certificates"
+                  value={completedCount}
+                  color="bg-purple-500"
+                />
+              </motion.div>
+
+              {/* Section Header */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center justify-between mb-4"
+              >
+                <h2 className="text-lg font-semibold text-foreground">
+                  {selectedCategory
+                    ? categoryConfig[selectedCategory].label
+                    : activeFilter === "in-progress"
+                    ? "Continue Learning"
+                    : activeFilter === "completed"
+                    ? "Completed Courses"
+                    : "All Courses"}
+                </h2>
+                {(selectedCategory || activeFilter !== "all") && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      setActiveFilter("all");
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary-green/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-green/20 transition-colors">
-                        <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-primary-green" />
-                      </div>
-                      <p className="text-sm sm:text-base text-foreground leading-relaxed">
-                        <strong className="text-primary-green">Tip:</strong>{" "}
-                        {tip}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </motion.div>
+                    Clear Filter
+                  </Button>
+                )}
+              </motion.div>
 
-          {/* View All CTA */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-center mt-8 sm:mt-10 md:mt-12"
-          >
-            <button className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-transparent border-2 border-primary-green text-primary-green text-sm sm:text-base font-semibold rounded-full hover:bg-primary-green hover:text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary-green/25">
-              View All Resources
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </motion.div>
+              {/* Courses Grid */}
+              {loading ? (
+                <div className="flex justify-center items-center py-20">
+                  <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
+                </div>
+              ) : filteredCourses.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                  {filteredCourses.map((course, index) => {
+                    const progress = getCourseProgress(course.id);
+                    return (
+                      <CourseCard
+                        key={course.id}
+                        course={course}
+                        progress={
+                          progress
+                            ? {
+                                percent: progress.progressPercent,
+                                isCompleted: progress.progressPercent >= 100,
+                              }
+                            : undefined
+                        }
+                        index={index}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-16"
+                >
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                    <BookOpen className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    No courses found
+                  </h3>
+                  <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                    {activeFilter === "in-progress"
+                      ? "You haven't started any courses yet. Browse all courses to begin learning!"
+                      : activeFilter === "completed"
+                      ? "You haven't completed any courses yet. Keep learning!"
+                      : "No courses are available in this category yet. Check back soon!"}
+                  </p>
+                  {activeFilter !== "all" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActiveFilter("all")}
+                      className="mt-4"
+                    >
+                      Browse All Courses
+                    </Button>
+                  )}
+                </motion.div>
+              )}
 
-          {/* Footer Note */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-8 sm:mt-10 md:mt-12 text-center text-muted-foreground text-sm sm:text-base"
-          >
-            <p>
-              More resources coming soon! Have suggestions?{" "}
-              <span className="text-primary-green font-semibold cursor-pointer hover:underline">
-                Let us know
-              </span>
-            </p>
-          </motion.div>
+              {/* Footer Note */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mt-10 text-center text-muted-foreground text-sm"
+              >
+                <p>
+                  More courses coming soon! Have suggestions?{" "}
+                  <span className="text-primary-green font-semibold cursor-pointer hover:underline">
+                    Let us know
+                  </span>
+                </p>
+              </motion.div>
+            </main>
+          </div>
         </div>
       </section>
-
-      {/* <PageFooter /> */}
     </div>
   );
 }

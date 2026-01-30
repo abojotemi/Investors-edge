@@ -26,6 +26,7 @@ import {
   Upload,
   X,
   Loader2,
+  Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { uploadFileWithProgress } from "@/lib/firebase/storage";
@@ -63,6 +64,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [linkUrl, setLinkUrl] = useState("");
   const [linkText, setLinkText] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -154,12 +157,60 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const insertImage = useCallback(() => {
     if (imageUrl) {
-      const imgHtml = `<img src="${imageUrl}" alt="Article image" class="max-w-full h-auto rounded-lg my-4" />`;
+      // Convert Google Drive sharing URL to direct embed URL
+      let finalUrl = imageUrl;
+      
+      // Handle Google Drive links
+      // Format: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+      // Convert to: https://drive.google.com/uc?export=view&id=FILE_ID
+      const driveMatch = imageUrl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (driveMatch) {
+        finalUrl = `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+      }
+      
+      // Handle Google Drive open links
+      // Format: https://drive.google.com/open?id=FILE_ID
+      const driveOpenMatch = imageUrl.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+      if (driveOpenMatch) {
+        finalUrl = `https://drive.google.com/uc?export=view&id=${driveOpenMatch[1]}`;
+      }
+      
+      const imgHtml = `<img src="${finalUrl}" alt="Article image" class="max-w-full h-auto rounded-lg my-4" />`;
       execCommand("insertHTML", imgHtml);
     }
     setShowImageModal(false);
     setImageUrl("");
   }, [imageUrl, execCommand]);
+
+  const insertVideo = useCallback(() => {
+    if (videoUrl) {
+      let embedHtml = "";
+      
+      // Handle Vimeo URLs
+      // Format: https://vimeo.com/VIDEO_ID or https://player.vimeo.com/video/VIDEO_ID
+      const vimeoMatch = videoUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+      if (vimeoMatch) {
+        embedHtml = `<div class="aspect-video my-4"><iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}" class="w-full h-full rounded-lg" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+      }
+      
+      // Handle YouTube URLs as fallback
+      const youtubeMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+      if (youtubeMatch) {
+        embedHtml = `<div class="aspect-video my-4"><iframe src="https://www.youtube.com/embed/${youtubeMatch[1]}" class="w-full h-full rounded-lg" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+      }
+      
+      if (embedHtml) {
+        execCommand("insertHTML", embedHtml);
+      } else {
+        toast.error("Invalid video URL", {
+          description: "Please enter a valid Vimeo or YouTube URL.",
+        });
+        return;
+      }
+    }
+    setShowVideoModal(false);
+    setVideoUrl("");
+  }, [videoUrl, execCommand]);
 
   const handleImageUpload = useCallback(async (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -339,7 +390,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       {
         icon: <ImageIcon className="w-4 h-4" />,
         command: "image",
-        title: "Insert Image",
+        title: "Insert Image (Google Drive supported)",
+        type: "custom",
+      },
+      {
+        icon: <Video className="w-4 h-4" />,
+        command: "video",
+        title: "Embed Video (Vimeo/YouTube)",
         type: "custom",
       },
     ],
@@ -356,6 +413,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         setShowLinkModal(true);
       } else if (button.command === "image") {
         setShowImageModal(true);
+      } else if (button.command === "video") {
+        setShowVideoModal(true);
       }
     } else {
       execCommand(button.command, button.arg);
@@ -714,6 +773,69 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                     className="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-primary-green/90 disabled:opacity-50"
                   >
                     Insert Image
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Video Modal */}
+      {showVideoModal && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setShowVideoModal(false)}
+          />
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Embed Video
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowVideoModal(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Video URL *
+                  </label>
+                  <input
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="https://vimeo.com/123456789"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Supports Vimeo and YouTube URLs
+                  </p>
+                </div>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowVideoModal(false);
+                      setVideoUrl("");
+                    }}
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={insertVideo}
+                    disabled={!videoUrl}
+                    className="px-4 py-2 bg-primary-green text-white rounded-lg hover:bg-primary-green/90 disabled:opacity-50"
+                  >
+                    Embed Video
                   </button>
                 </div>
               </div>

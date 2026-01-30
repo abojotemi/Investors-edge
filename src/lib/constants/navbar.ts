@@ -7,8 +7,13 @@ export const learnItems: {
     title: "Learning Hub",
     href: "/learn",
     description:
-      "Access videos, articles, downloads and quick tips to build your investment knowledge.",
+      "Access courses to build your investment knowledge.",
   },
+  {
+    title: "Videos",
+    href: "/learn/videos",
+    description: "Watch video tutorials to learn about investing.",
+  }
   // {
   //   title: "Investment Basics",
   //   href: "/learn#videos",

@@ -86,7 +86,7 @@ export function Navigation() {
                       Learn to Invest
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <ul className="grid gap-3 p-4 md:w-[500px] lg:w-[600px] lg:grid-cols-1">
+                      <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
                         {learnItems.map((item) => (
                           <LearnItem
                             key={item.title}

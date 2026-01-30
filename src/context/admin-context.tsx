@@ -18,20 +18,20 @@ import {
   addArticle as createArticle,
   updateArticle as modifyArticle,
   deleteArticle as removeArticle,
-  getStocks,
-  addStock as createStock,
-  updateStock as modifyStock,
-  deleteStock as removeStock,
   bulkUpdateStatus as updateStatusBulk,
   bulkDelete as deleteBulk,
+  getCourses,
+  addCourse as createCourse,
+  updateCourse as modifyCourse,
+  deleteCourse as removeCourse,
 } from "@/lib/firebase/firestore";
 import type {
   Video,
   Article,
-  Stock,
   AdminUser,
   DashboardStats,
   ContentStatus,
+  Course,
 } from "@/types/admin";
 
 interface AdminContextType {
@@ -41,7 +41,7 @@ interface AdminContextType {
   adminUser: AdminUser | null;
   videos: Video[];
   articles: Article[];
-  stocks: Stock[];
+  courses: Course[];
   stats: DashboardStats;
   loading: boolean;
   // Video operations
@@ -58,13 +58,13 @@ interface AdminContextType {
   updateArticle: (id: string, article: Partial<Article>) => Promise<void>;
   deleteArticle: (id: string) => Promise<void>;
   getArticle: (id: string) => Article | undefined;
-  // Stock operations
-  addStock: (
-    stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
+  // Course operations
+  addCourse: (
+    course: Omit<Course, "id" | "createdAt" | "updatedAt">
   ) => Promise<void>;
-  updateStock: (id: string, stock: Partial<Stock>) => Promise<void>;
-  deleteStock: (id: string) => Promise<void>;
-  getStock: (id: string) => Stock | undefined;
+  updateCourse: (id: string, course: Partial<Course>) => Promise<void>;
+  deleteCourse: (id: string) => Promise<void>;
+  getCourse: (id: string) => Course | undefined;
   // Bulk operations
   bulkUpdateStatus: (
     type: "video" | "article",
@@ -75,7 +75,7 @@ interface AdminContextType {
   // Refresh data
   refreshVideos: () => Promise<void>;
   refreshArticles: () => Promise<void>;
-  refreshStocks: () => Promise<void>;
+  refreshCourses: () => Promise<void>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -103,7 +103,7 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
   const [dataLoading, setDataLoading] = useState(true);
   const [videos, setVideos] = useState<Video[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
-  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
 
   // Derive admin state from auth context using useMemo to avoid unnecessary re-renders
   const isAdmin = useMemo(
@@ -150,13 +150,13 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     }
   }, []);
 
-  // Fetch stocks from Firestore
-  const refreshStocks = useCallback(async () => {
+  // Fetch courses from Firestore
+  const refreshCourses = useCallback(async () => {
     try {
-      const fetchedStocks = await getStocks();
-      setStocks(fetchedStocks);
+      const fetchedCourses = await getCourses();
+      setCourses(fetchedCourses);
     } catch (error) {
-      console.error("Error fetching stocks:", error);
+      console.error("Error fetching courses:", error);
     }
   }, []);
 
@@ -167,11 +167,7 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     (async () => {
       if (!authLoading && isAdmin) {
         setDataLoading(true);
-        await Promise.all([
-          refreshVideos(),
-          refreshArticles(),
-          refreshStocks(),
-        ]);
+        await Promise.all([refreshVideos(), refreshArticles(), refreshCourses()]);
         if (isMounted) {
           setDataLoading(false);
         }
@@ -183,7 +179,7 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     return () => {
       isMounted = false;
     };
-  }, [authLoading, isAdmin, refreshVideos, refreshArticles, refreshStocks]);
+  }, [authLoading, isAdmin, refreshVideos, refreshArticles, refreshCourses]);
 
   // Combine loading states
   const loading = authLoading || dataLoading;
@@ -192,13 +188,15 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
   const stats: DashboardStats = {
     totalVideos: videos.length,
     totalArticles: articles.length,
-    totalStocks: stocks.length,
+    totalCourses: courses.length,
     publishedContent:
       videos.filter((v) => v.status === "published").length +
-      articles.filter((a) => a.status === "published").length,
+      articles.filter((a) => a.status === "published").length +
+      courses.filter((c) => c.status === "published").length,
     draftContent:
       videos.filter((v) => v.status === "draft").length +
-      articles.filter((a) => a.status === "draft").length,
+      articles.filter((a) => a.status === "draft").length +
+      courses.filter((c) => c.status === "draft").length,
   };
 
   // Video operations
@@ -245,26 +243,26 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     return articles.find((article) => article.id === id);
   };
 
-  // Stock operations
-  const addStock = async (
-    stock: Omit<Stock, "id" | "createdAt" | "updatedAt">
+  // Course operations
+  const addCourse = async (
+    course: Omit<Course, "id" | "createdAt" | "updatedAt">
   ) => {
-    await createStock(stock);
-    await refreshStocks();
+    await createCourse(course);
+    await refreshCourses();
   };
 
-  const updateStock = async (id: string, updates: Partial<Stock>) => {
-    await modifyStock(id, updates);
-    await refreshStocks();
+  const updateCourse = async (id: string, updates: Partial<Course>) => {
+    await modifyCourse(id, updates);
+    await refreshCourses();
   };
 
-  const deleteStock = async (id: string) => {
-    await removeStock(id);
-    await refreshStocks();
+  const deleteCourse = async (id: string) => {
+    await removeCourse(id);
+    await refreshCourses();
   };
 
-  const getStock = (id: string) => {
-    return stocks.find((stock) => stock.id === id);
+  const getCourse = (id: string) => {
+    return courses.find((course) => course.id === id);
   };
 
   // Bulk operations
@@ -297,7 +295,7 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     adminUser,
     videos,
     articles,
-    stocks,
+    courses,
     stats,
     loading,
     addVideo,
@@ -308,15 +306,15 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     updateArticle,
     deleteArticle,
     getArticle,
-    addStock,
-    updateStock,
-    deleteStock,
-    getStock,
+    addCourse,
+    updateCourse,
+    deleteCourse,
+    getCourse,
     bulkUpdateStatus,
     bulkDelete,
     refreshVideos,
     refreshArticles,
-    refreshStocks,
+    refreshCourses,
   };
 
   return (

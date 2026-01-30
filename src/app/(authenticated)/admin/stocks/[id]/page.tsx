@@ -1,27 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   ArrowLeft,
   Save,
-  Trash2,
   TrendingUp,
-  Plus,
-  CheckCircle,
-  TrendingDown,
+  DollarSign,
+  Target,
+  AlertTriangle,
   Loader2,
-  Globe,
+  Trash2,
 } from "lucide-react";
-import { StockPriceCard } from "@/components/ui/stock-price-card";
-import { useAdmin } from "@/context/admin-context";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -29,172 +26,121 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 import { toast } from "sonner";
-import type {
-  StockSector,
-  StockStatus,
-  StockHighlight,
-  StockMarket,
-} from "@/types/admin";
+import { getStock, updateStock, deleteStock } from "@/lib/firebase/firestore";
+import type { Stock, StockStatus, StockSector } from "@/types/admin";
 
 const sectors: { label: string; value: StockSector }[] = [
-  { label: "Banking", value: "banking" },
-  { label: "Insurance", value: "insurance" },
-  { label: "Construction", value: "construction" },
-  { label: "Industrial Goods", value: "industrial-goods" },
-  { label: "Consumer Goods", value: "consumer-goods" },
-  { label: "Oil & Gas", value: "oil-gas" },
   { label: "Technology", value: "technology" },
-  { label: "Agriculture", value: "agriculture" },
   { label: "Healthcare", value: "healthcare" },
+  { label: "Finance", value: "finance" },
+  { label: "Energy", value: "energy" },
+  { label: "Consumer", value: "consumer" },
+  { label: "Industrial", value: "industrial" },
+  { label: "Materials", value: "materials" },
+  { label: "Utilities", value: "utilities" },
   { label: "Real Estate", value: "real-estate" },
-  { label: "Other", value: "other" },
-];
-
-const statuses: { label: string; value: StockStatus }[] = [
-  { label: "Active", value: "active" },
-  { label: "Watchlist", value: "watchlist" },
-  { label: "Closed", value: "closed" },
-];
-
-const markets: { label: string; value: StockMarket }[] = [
-  { label: "🇺🇸 US (NYSE, NASDAQ)", value: "US" },
-  { label: "🇳🇬 Nigeria (NGX)", value: "NGX" },
-];
-
-const highlightIcons: { label: string; value: "check" | "up" | "down" }[] = [
-  { label: "✓ Check", value: "check" },
-  { label: "↑ Up", value: "up" },
-  { label: "↓ Down", value: "down" },
+  { label: "Communication", value: "communication" },
 ];
 
 export default function EditStockPage() {
   const router = useRouter();
   const params = useParams();
   const stockId = params.id as string;
-  const { getStock, updateStock, deleteStock, loading } = useAdmin();
+
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    ticker: "",
-    market: "US" as StockMarket,
-    sector: "banking" as StockSector,
-    status: "active" as StockStatus,
-    analysis: [""],
-    highlights: [
-      { title: "", description: "", icon: "check" as const },
-    ] as StockHighlight[],
-    tradeSetup: {
-      buyRange: "",
-      targetProfit: "",
-      riskPrice: "",
-    },
-    author: "",
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // Form state
+  const [name, setName] = useState("");
+  const [ticker, setTicker] = useState("");
+  const [sector, setSector] = useState<StockSector>("technology");
+  const [description, setDescription] = useState("");
+  const [analysis, setAnalysis] = useState("");
+  const [entryPrice, setEntryPrice] = useState("");
+  const [targetPrice, setTargetPrice] = useState("");
+  const [stopLoss, setStopLoss] = useState("");
+  const [status, setStatus] = useState<StockStatus>("active");
+  const [closingPrice, setClosingPrice] = useState("");
+  const [closingNotes, setClosingNotes] = useState("");
 
   useEffect(() => {
-    const stock = getStock(stockId);
-    if (stock) {
-      setFormData({
-        name: stock.name,
-        ticker: stock.ticker,
-        market: stock.market || "US",
-        sector: stock.sector,
-        status: stock.status,
-        analysis: stock.analysis.length > 0 ? stock.analysis : [""],
-        highlights:
-          stock.highlights.length > 0
-            ? stock.highlights
-            : [{ title: "", description: "", icon: "check" }],
-        tradeSetup: stock.tradeSetup,
-        author: stock.author,
-      });
-    }
-  }, [stockId, getStock]);
+    const loadStock = async () => {
+      try {
+        const stock = await getStock(stockId);
+        if (!stock) {
+          toast.error("Stock not found");
+          router.push("/admin/stocks");
+          return;
+        }
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+        setName(stock.name);
+        setTicker(stock.ticker);
+        setSector(stock.sector);
+        setDescription(stock.description);
+        setAnalysis(stock.analysis);
+        setEntryPrice(stock.entryPrice.toString());
+        setTargetPrice(stock.targetPrice.toString());
+        setStopLoss(stock.stopLoss.toString());
+        setStatus(stock.status);
+        if (stock.closingPrice) setClosingPrice(stock.closingPrice.toString());
+        if (stock.closingNotes) setClosingNotes(stock.closingNotes);
+      } catch (error) {
+        console.error("Error loading stock:", error);
+        toast.error("Failed to load stock");
+        router.push("/admin/stocks");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Stock name is required";
-    }
-    if (!formData.ticker.trim()) {
-      newErrors.ticker = "Ticker symbol is required";
-    }
-    if (!formData.analysis[0]?.trim()) {
-      newErrors.analysis = "At least one analysis paragraph is required";
-    }
-    if (!formData.tradeSetup.buyRange.trim()) {
-      newErrors.buyRange = "Buy range is required";
-    }
-    if (!formData.tradeSetup.targetProfit.trim()) {
-      newErrors.targetProfit = "Target profit is required";
-    }
-    if (!formData.tradeSetup.riskPrice.trim()) {
-      newErrors.riskPrice = "Risk price is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    loadStock();
+  }, [stockId, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      toast.error("Validation error", {
-        description: "Please fill in all required fields.",
-      });
+    if (!name || !ticker || !entryPrice || !targetPrice || !stopLoss) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
-    setSaving(true);
-
     try {
+      setSaving(true);
       await updateStock(stockId, {
-        ...formData,
-        market: formData.market,
-        analysis: formData.analysis.filter((p) => p.trim()),
-        highlights: formData.highlights.filter((h) => h.title.trim()),
+        name,
+        ticker: ticker.toUpperCase(),
+        sector,
+        description,
+        analysis,
+        entryPrice: parseFloat(entryPrice),
+        targetPrice: parseFloat(targetPrice),
+        stopLoss: parseFloat(stopLoss),
+        status,
+        closingPrice: closingPrice ? parseFloat(closingPrice) : undefined,
+        closingNotes: closingNotes || undefined,
+        dateClosed: status === "closed" ? new Date() : undefined,
       });
 
-      toast.success("Stock updated", {
-        description: "Your changes have been saved.",
-      });
-
+      toast.success("Stock updated successfully");
       router.push("/admin/stocks");
     } catch (error) {
       console.error("Error updating stock:", error);
-      toast.error("Error updating stock", {
-        description:
-          "There was a problem saving your changes. Please try again.",
-      });
+      toast.error("Failed to update stock");
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    setDeleting(true);
+    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
 
     try {
+      setDeleting(true);
       await deleteStock(stockId);
-      toast.success("Stock deleted");
+      toast.success("Stock deleted successfully");
       router.push("/admin/stocks");
     } catch (error) {
       console.error("Error deleting stock:", error);
@@ -204,559 +150,320 @@ export default function EditStockPage() {
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
+  const potentialGain =
+    entryPrice && targetPrice
+      ? (
+          ((parseFloat(targetPrice) - parseFloat(entryPrice)) /
+            parseFloat(entryPrice)) *
+          100
+        ).toFixed(2)
+      : null;
 
-  const handleAnalysisChange = (index: number, value: string) => {
-    const newAnalysis = [...formData.analysis];
-    newAnalysis[index] = value;
-    setFormData((prev) => ({ ...prev, analysis: newAnalysis }));
-  };
-
-  const addAnalysisParagraph = () => {
-    setFormData((prev) => ({ ...prev, analysis: [...prev.analysis, ""] }));
-  };
-
-  const removeAnalysisParagraph = (index: number) => {
-    const newAnalysis = formData.analysis.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, analysis: newAnalysis }));
-  };
-
-  const handleHighlightChange = (
-    index: number,
-    field: keyof StockHighlight,
-    value: string
-  ) => {
-    const newHighlights = [...formData.highlights];
-    newHighlights[index] = { ...newHighlights[index], [field]: value };
-    setFormData((prev) => ({ ...prev, highlights: newHighlights }));
-  };
-
-  const addHighlight = () => {
-    setFormData((prev) => ({
-      ...prev,
-      highlights: [
-        ...prev.highlights,
-        { title: "", description: "", icon: "check" },
-      ],
-    }));
-  };
-
-  const removeHighlight = (index: number) => {
-    const newHighlights = formData.highlights.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, highlights: newHighlights }));
-  };
-
-  const handleTradeSetupChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tradeSetup: { ...prev.tradeSetup, [field]: value },
-    }));
-  };
+  const potentialLoss =
+    entryPrice && stopLoss
+      ? (
+          ((parseFloat(entryPrice) - parseFloat(stopLoss)) /
+            parseFloat(entryPrice)) *
+          100
+        ).toFixed(2)
+      : null;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-96">
         <Loader2 className="w-8 h-8 animate-spin text-primary-green" />
       </div>
     );
   }
 
-  const stock = getStock(stockId);
-  if (!stock) {
-    return (
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold mb-4">Stock not found</h1>
-        <Link href="/admin/stocks">
-          <Button>Back to Stocks</Button>
-        </Link>
-      </div>
-    );
-  }
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="max-w-5xl mx-auto"
-    >
+    <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/admin/stocks"
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Edit Stock</h1>
-            <p className="text-muted-foreground mt-1">{stock.name}</p>
-          </div>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-4 mb-6"
+      >
+        <Link href="/admin/stocks">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </Link>
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold text-foreground">Edit Stock</h1>
+          <p className="text-muted-foreground">
+            Update {name} ({ticker})
+          </p>
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" disabled={deleting}>
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete this stock?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete &quot;{stock.name}&quot;. This
-                action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+      </motion.div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Basic Info */}
             <Card>
               <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary-green" />
+                  Stock Details
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="mb-2">
-                    Stock Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="e.g., Veritas Kapital Assurance"
-                    className={errors.name ? "border-red-300" : ""}
-                  />
-                  {errors.name && (
-                    <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                  )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Company Name *</Label>
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Apple Inc."
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ticker">Ticker Symbol *</Label>
+                    <Input
+                      id="ticker"
+                      value={ticker}
+                      onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                      placeholder="AAPL"
+                      required
+                    />
+                  </div>
                 </div>
+
                 <div>
-                  <Label htmlFor="ticker" className="mb-2">
-                    Ticker Symbol *
-                  </Label>
-                  <Input
-                    id="ticker"
-                    name="ticker"
-                    value={formData.ticker}
-                    onChange={handleChange}
-                    placeholder="e.g., VERITAS"
-                    className={`uppercase ${
-                      errors.ticker ? "border-red-300" : ""
-                    }`}
-                  />
-                  {errors.ticker && (
-                    <p className="text-red-500 text-sm mt-1">{errors.ticker}</p>
-                  )}
-                </div>
-                <div>
-                  <Label className="mb-2">Market *</Label>
+                  <Label htmlFor="sector">Sector</Label>
                   <Select
-                    value={formData.market}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        market: value as StockMarket,
-                      }))
-                    }
+                    value={sector}
+                    onValueChange={(v) => setSector(v as StockSector)}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {markets.map((market) => (
-                        <SelectItem key={market.value} value={market.value}>
-                          {market.label}
+                      {sectors.map((s) => (
+                        <SelectItem key={s.value} value={s.value}>
+                          {s.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    Select the stock exchange for live price data
-                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="description">Short Description</Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Brief overview of why this stock is recommended..."
+                    rows={3}
+                  />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Analysis */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Analysis</CardTitle>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addAnalysisParagraph}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Paragraph
-                  </Button>
-                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-primary-green" />
+                  Price Targets
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {formData.analysis.map((paragraph, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Textarea
-                      value={paragraph}
-                      onChange={(e) =>
-                        handleAnalysisChange(index, e.target.value)
-                      }
-                      placeholder={`Analysis paragraph ${index + 1}...`}
-                      rows={4}
-                      className={
-                        index === 0 && errors.analysis ? "border-red-300" : ""
-                      }
-                    />
-                    {formData.analysis.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeAnalysisParagraph(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="entryPrice">Entry Price *</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="entryPrice"
+                        type="number"
+                        step="0.01"
+                        value={entryPrice}
+                        onChange={(e) => setEntryPrice(e.target.value)}
+                        placeholder="0.00"
+                        className="pl-9"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="targetPrice">Target Price *</Label>
+                    <div className="relative">
+                      <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary-green" />
+                      <Input
+                        id="targetPrice"
+                        type="number"
+                        step="0.01"
+                        value={targetPrice}
+                        onChange={(e) => setTargetPrice(e.target.value)}
+                        placeholder="0.00"
+                        className="pl-9"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="stopLoss">Stop Loss *</Label>
+                    <div className="relative">
+                      <AlertTriangle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500" />
+                      <Input
+                        id="stopLoss"
+                        type="number"
+                        step="0.01"
+                        value={stopLoss}
+                        onChange={(e) => setStopLoss(e.target.value)}
+                        placeholder="0.00"
+                        className="pl-9"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {(potentialGain || potentialLoss) && (
+                  <div className="flex gap-4 pt-2">
+                    {potentialGain && (
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">
+                          Potential Gain:{" "}
+                        </span>
+                        <span className="font-medium text-primary-green">
+                          +{potentialGain}%
+                        </span>
+                      </div>
+                    )}
+                    {potentialLoss && (
+                      <div className="text-sm">
+                        <span className="text-muted-foreground">Risk: </span>
+                        <span className="font-medium text-red-500">
+                          -{potentialLoss}%
+                        </span>
+                      </div>
                     )}
                   </div>
-                ))}
-                {errors.analysis && (
-                  <p className="text-red-500 text-sm">{errors.analysis}</p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Highlights */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Highlights</CardTitle>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addHighlight}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Highlight
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {formData.highlights.map((highlight, index) => (
-                  <div
-                    key={index}
-                    className="p-4 border rounded-lg space-y-3 relative"
-                  >
-                    <div className="flex gap-4">
-                      <div className="flex-1">
-                        <Label className="mb-2">Title</Label>
-                        <Input
-                          value={highlight.title}
-                          onChange={(e) =>
-                            handleHighlightChange(
-                              index,
-                              "title",
-                              e.target.value
-                            )
-                          }
-                          placeholder="e.g., Why This Stock?"
-                        />
-                      </div>
-                      <div className="w-32">
-                        <Label className="mb-2">Icon</Label>
-                        <Select
-                          value={highlight.icon}
-                          onValueChange={(value) =>
-                            handleHighlightChange(index, "icon", value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {highlightIcons.map((icon) => (
-                              <SelectItem key={icon.value} value={icon.value}>
-                                {icon.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="mb-2">Description</Label>
-                      <Textarea
-                        value={highlight.description}
-                        onChange={(e) =>
-                          handleHighlightChange(
-                            index,
-                            "description",
-                            e.target.value
-                          )
-                        }
-                        placeholder="Brief description..."
-                        rows={2}
+            {/* Closing Details (for closed positions) */}
+            {status === "closed" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Closing Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="closingPrice">Closing Price</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="closingPrice"
+                        type="number"
+                        step="0.01"
+                        value={closingPrice}
+                        onChange={(e) => setClosingPrice(e.target.value)}
+                        placeholder="0.00"
+                        className="pl-9"
                       />
                     </div>
-                    {formData.highlights.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeHighlight(index)}
-                        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                  <div>
+                    <Label htmlFor="closingNotes">Closing Notes</Label>
+                    <Textarea
+                      id="closingNotes"
+                      value={closingNotes}
+                      onChange={(e) => setClosingNotes(e.target.value)}
+                      placeholder="Why was this position closed?"
+                      rows={3}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Trade Setup */}
             <Card>
               <CardHeader>
-                <CardTitle>Trade Setup</CardTitle>
+                <CardTitle>Analysis</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label className="mb-2">Buy Range *</Label>
-                    <Input
-                      value={formData.tradeSetup.buyRange}
-                      onChange={(e) =>
-                        handleTradeSetupChange("buyRange", e.target.value)
-                      }
-                      placeholder="e.g., ₦2.20 – ₦2.40"
-                      className={errors.buyRange ? "border-red-300" : ""}
-                    />
-                    {errors.buyRange && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.buyRange}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="mb-2">Target Profit *</Label>
-                    <Input
-                      value={formData.tradeSetup.targetProfit}
-                      onChange={(e) =>
-                        handleTradeSetupChange("targetProfit", e.target.value)
-                      }
-                      placeholder="e.g., +40%"
-                      className={errors.targetProfit ? "border-red-300" : ""}
-                    />
-                    {errors.targetProfit && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.targetProfit}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="mb-2">Risk Price *</Label>
-                    <Input
-                      value={formData.tradeSetup.riskPrice}
-                      onChange={(e) =>
-                        handleTradeSetupChange("riskPrice", e.target.value)
-                      }
-                      placeholder="e.g., ₦1.80"
-                      className={errors.riskPrice ? "border-red-300" : ""}
-                    />
-                    {errors.riskPrice && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.riskPrice}
-                      </p>
-                    )}
-                  </div>
-                </div>
+              <CardContent>
+                <RichTextEditor
+                  value={analysis}
+                  onChange={setAnalysis}
+                  placeholder="Write your detailed stock analysis here..."
+                />
               </CardContent>
             </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Publish Box */}
             <Card>
               <CardHeader>
                 <CardTitle>Status</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
                 <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      status: value as StockStatus,
-                    }))
-                  }
+                  value={status}
+                  onValueChange={(v) => setStatus(v as StockStatus)}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {statuses.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
                   </SelectContent>
                 </Select>
+              </CardContent>
+            </Card>
 
+            <Card>
+              <CardContent className="pt-6 space-y-3">
                 <Button
                   type="submit"
                   className="w-full bg-primary-green hover:bg-primary-green/90"
                   disabled={saving}
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  {saving ? "Saving..." : "Save Changes"}
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Update Stock
+                    </>
+                  )}
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Sector */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Sector</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Select
-                  value={formData.sector}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      sector: value as StockSector,
-                    }))
-                  }
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="w-full"
+                  onClick={handleDelete}
+                  disabled={deleting}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sectors.map((sector) => (
-                      <SelectItem key={sector.value} value={sector.value}>
-                        {sector.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
-
-            {/* Live Price Preview */}
-            {formData.ticker && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    Live Price
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <StockPriceCard
-                    ticker={formData.ticker.toUpperCase()}
-                    isNigerian={formData.market === "NGX"}
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {formData.market === "US"
-                      ? "Data from US markets (NYSE/NASDAQ)"
-                      : "Data from Nigerian Stock Exchange"}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Preview */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Preview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="p-4 border rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-5 h-5 text-primary-green" />
-                    <span className="font-semibold">
-                      {formData.name || "Stock Name"}
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground flex items-center gap-2">
-                    <span>Ticker: {formData.ticker || "TICKER"}</span>
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-muted">
-                      {formData.market === "US" ? "🇺🇸 US" : "🇳🇬 NGX"}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex gap-2 flex-wrap">
-                    {formData.highlights.slice(0, 3).map((h, i) => (
-                      <div
-                        key={i}
-                        className="text-xs bg-primary-green/10 text-primary-green px-2 py-1 rounded"
-                      >
-                        {h.icon === "check" && (
-                          <CheckCircle className="w-3 h-3 inline mr-1" />
-                        )}
-                        {h.icon === "up" && (
-                          <TrendingUp className="w-3 h-3 inline mr-1" />
-                        )}
-                        {h.icon === "down" && (
-                          <TrendingDown className="w-3 h-3 inline mr-1" />
-                        )}
-                        {h.title || `Highlight ${i + 1}`}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Meta Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Information</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
-                <p>
-                  <strong>Created:</strong>{" "}
-                  {stock.createdAt.toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Updated:</strong>{" "}
-                  {stock.updatedAt.toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Author:</strong> {stock.author}
-                </p>
+                  {deleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Stock
+                    </>
+                  )}
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </form>
-    </motion.div>
+    </div>
   );
 }

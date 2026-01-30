@@ -35,9 +35,9 @@ const sections = [
       "Track real-time market data, analyze stocks, and monitor your watchlist",
     href: "/stocks",
     icon: TrendingUp,
-    color: "bg-emerald-500",
-    lightColor: "bg-emerald-50",
-    textColor: "text-emerald-600",
+    color: "bg-primary-green",
+    lightColor: "bg-primary-green/10",
+    textColor: "text-primary-green",
   },
   {
     title: "Learn",
@@ -45,9 +45,9 @@ const sections = [
       "Access educational videos and articles to improve your investing knowledge",
     href: "/learn",
     icon: BookOpen,
-    color: "bg-blue-500",
-    lightColor: "bg-blue-50",
-    textColor: "text-blue-600",
+    color: "bg-primary-peach",
+    lightColor: "bg-primary-peach/10",
+    textColor: "text-primary-peach",
   },
   {
     title: "Insights",
@@ -55,9 +55,9 @@ const sections = [
       "Get expert market analysis, reports, and investment strategies",
     href: "/insights",
     icon: Lightbulb,
-    color: "bg-amber-500",
-    lightColor: "bg-amber-50",
-    textColor: "text-amber-600",
+    color: "bg-primary-orange",
+    lightColor: "bg-primary-orange/10",
+    textColor: "text-primary-orange",
   },
   {
     title: "Community",
@@ -69,16 +69,16 @@ const sections = [
     lightColor: "bg-purple-50",
     textColor: "text-purple-600",
   },
-  {
-    title: "Opportunities",
-    description:
-      "Discover curated investment opportunities and emerging markets",
-    href: "/opportunities",
-    icon: Target,
-    color: "bg-rose-500",
-    lightColor: "bg-rose-50",
-    textColor: "text-rose-600",
-  },
+  // {
+  //   title: "Opportunities",
+  //   description:
+  //     "Discover curated investment opportunities and emerging markets",
+  //   href: "/opportunities",
+  //   icon: Target,
+  //   color: "bg-rose-500",
+  //   lightColor: "bg-rose-50",
+  //   textColor: "text-rose-600",
+  // },
   {
     title: "Forum",
     description:

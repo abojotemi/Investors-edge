@@ -5,6 +5,7 @@ import Auth from "@/components/auth";
 import { motion } from "framer-motion";
 import { TrendingUp, Shield, BarChart3 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const LoginPage = () => {
   return (
@@ -31,6 +32,119 @@ const LoginPage = () => {
         />
       </div>
 
+      {/* Floating Company Logos/Tickers */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Apple */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 0.08, y: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="absolute top-[10%] left-[8%]"
+        >
+          <div className="text-4xl font-bold text-gray-900 select-none">AAPL</div>
+        </motion.div>
+        
+        {/* Microsoft */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 0.06, y: 0 }}
+          transition={{ duration: 1, delay: 0.7 }}
+          className="absolute top-[15%] right-[12%]"
+        >
+          <div className="text-3xl font-bold text-gray-900 select-none">MSFT</div>
+        </motion.div>
+        
+        {/* Google */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 0.07, x: 0 }}
+          transition={{ duration: 1, delay: 0.9 }}
+          className="absolute top-[35%] left-[5%]"
+        >
+          <div className="text-2xl font-bold text-gray-900 select-none">GOOGL</div>
+        </motion.div>
+        
+        {/* Amazon */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 0.05, x: 0 }}
+          transition={{ duration: 1, delay: 1.1 }}
+          className="absolute top-[45%] right-[6%]"
+        >
+          <div className="text-3xl font-bold text-gray-900 select-none">AMZN</div>
+        </motion.div>
+        
+        {/* Tesla */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 0.06, y: 0 }}
+          transition={{ duration: 1, delay: 1.3 }}
+          className="absolute bottom-[30%] left-[10%]"
+        >
+          <div className="text-2xl font-bold text-gray-900 select-none">TSLA</div>
+        </motion.div>
+        
+        {/* NVIDIA */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 0.07, y: 0 }}
+          transition={{ duration: 1, delay: 1.5 }}
+          className="absolute bottom-[25%] right-[8%]"
+        >
+          <div className="text-2xl font-bold text-gray-900 select-none">NVDA</div>
+        </motion.div>
+        
+        {/* Meta */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 0.05, x: 0 }}
+          transition={{ duration: 1, delay: 1.7 }}
+          className="absolute bottom-[12%] left-[15%]"
+        >
+          <div className="text-xl font-bold text-gray-900 select-none">META</div>
+        </motion.div>
+        
+        {/* Netflix */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 0.06, x: 0 }}
+          transition={{ duration: 1, delay: 1.9 }}
+          className="absolute bottom-[15%] right-[15%]"
+        >
+          <div className="text-xl font-bold text-gray-900 select-none">NFLX</div>
+        </motion.div>
+        
+        {/* Berkshire */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 0.04, y: 0 }}
+          transition={{ duration: 1, delay: 2.1 }}
+          className="absolute top-[60%] left-[3%]"
+        >
+          <div className="text-lg font-bold text-gray-900 select-none">BRK.A</div>
+        </motion.div>
+        
+        {/* JPMorgan */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 0.05, y: 0 }}
+          transition={{ duration: 1, delay: 2.3 }}
+          className="absolute top-[5%] left-[40%]"
+        >
+          <div className="text-lg font-bold text-gray-900 select-none">JPM</div>
+        </motion.div>
+        
+        {/* Visa */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 0.06, x: 0 }}
+          transition={{ duration: 1, delay: 2.5 }}
+          className="absolute bottom-[5%] right-[35%]"
+        >
+          <div className="text-xl font-bold text-gray-900 select-none">V</div>
+        </motion.div>
+      </div>
+
       <div className="relative z-10 w-full max-w-md mx-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -40,17 +154,17 @@ const LoginPage = () => {
         >
           {/* Logo/Brand */}
           <div className="text-center mb-8">
+          <div className="flex justify-center items-center gap-2 cursor-pointer">
             <Link href="/">
-              <motion.h1
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="text-3xl font-bold"
-              >
-                <span className="text-primary-green">Investor&apos;s</span>{" "}
-                <span className="text-primary-peach">Edge</span>
-              </motion.h1>
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={200}
+              height={40}
+              className="h-10 w-auto object-contain"
+            />
             </Link>
+          </div>
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

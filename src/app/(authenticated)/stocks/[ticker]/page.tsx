@@ -1,135 +1,92 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   ArrowLeft,
   TrendingUp,
+  TrendingDown,
+  Target,
   AlertTriangle,
+  CheckCircle,
   BarChart3,
+  Calendar,
+  MessageSquare,
   Loader2,
-  Activity,
-  Globe,
-  RefreshCw,
-  DollarSign,
-  ArrowUpRight,
-  ArrowDownRight,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import PageFooter from "@/components/ui/page-footer";
 import BackgroundCircles from "@/components/ui/background-circles";
-import {
-  getStockQuote,
-  getStockHistory,
-  formatPrice,
-  formatPercentChange,
-  formatLargeNumber,
-  type StockQuote,
-  type StockHistoricalData,
-} from "@/lib/api/stocks";
+import { StockPriceCard } from "@/components/ui/stock-price-card";
+import { useContent } from "@/context/content-context";
+import { useState } from "react";
+
+// Sector labels and colors for display
+const sectorLabels: Record<string, string> = {
+  technology: "Technology",
+  healthcare: "Healthcare",
+  finance: "Finance",
+  energy: "Energy",
+  consumer: "Consumer",
+  industrial: "Industrial",
+  materials: "Materials",
+  utilities: "Utilities",
+  "real-estate": "Real Estate",
+  communication: "Communication",
+};
+
+const sectorColors: Record<string, string> = {
+  technology: "bg-blue-500",
+  healthcare: "bg-green-500",
+  finance: "bg-purple-500",
+  energy: "bg-yellow-500",
+  consumer: "bg-pink-500",
+  industrial: "bg-gray-500",
+  materials: "bg-orange-500",
+  utilities: "bg-teal-500",
+  "real-estate": "bg-indigo-500",
+  communication: "bg-red-500",
+};
 
 export default function StockDetailPage() {
   const params = useParams();
-  const ticker = (params.ticker as string).toUpperCase();
-  const [quote, setQuote] = useState<StockQuote | null>(null);
-  const [history, setHistory] = useState<StockHistoricalData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [selectedRange, setSelectedRange] = useState<
-    "1d" | "5d" | "1mo" | "3mo" | "1y"
-  >("1mo");
+  const stockId = params.ticker as string;
+  const { stocks, loading } = useContent();
 
-  useEffect(() => {
-    const fetchData = async (showRefresh = false) => {
-      if (showRefresh) setRefreshing(true);
-      else setLoading(true);
+  const [comment, setComment] = useState("");
+  const [email, setEmail] = useState("");
 
-      try {
-        const [quoteData, historyData] = await Promise.all([
-          getStockQuote(ticker, false),
-          getStockHistory(ticker, selectedRange, false),
-        ]);
-        setQuote(quoteData);
-        setHistory(historyData);
-      } catch (error) {
-        console.error("Error fetching stock data:", error);
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    };
-
-    fetchData();
-    // Auto-refresh every 60 seconds
-    const interval = setInterval(() => fetchData(true), 60000);
-    return () => clearInterval(interval);
-  }, [ticker, selectedRange]);
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      const [quoteData, historyData] = await Promise.all([
-        getStockQuote(ticker, false),
-        getStockHistory(ticker, selectedRange, false),
-      ]);
-      setQuote(quoteData);
-      setHistory(historyData);
-    } catch (error) {
-      console.error("Error refreshing stock data:", error);
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const isPositive = quote && quote.changePercent >= 0;
-
-  // Calculate price range percentage
-  const getPriceRangePercent = () => {
-    if (!quote || quote.dayLow === quote.dayHigh) return 50;
-    return (
-      ((quote.price - quote.dayLow) / (quote.dayHigh - quote.dayLow)) * 100
-    );
-  };
-
-  // Calculate 52-week range percentage
-  const get52WeekPercent = () => {
-    if (!quote || !quote.fiftyTwoWeekLow || !quote.fiftyTwoWeekHigh)
-      return null;
-    if (quote.fiftyTwoWeekLow === quote.fiftyTwoWeekHigh) return 50;
-    return (
-      ((quote.price - quote.fiftyTwoWeekLow) /
-        (quote.fiftyTwoWeekHigh - quote.fiftyTwoWeekLow)) *
-      100
-    );
-  };
+  // Find the stock by ID (which matches the URL ticker param)
+  const stock = stocks.find((s) => s.id === stockId);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-green/5">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary-green mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading {ticker} data...</p>
+          <Loader2 className="w-12 h-12 text-primary-green animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading stock details...</p>
         </div>
       </div>
     );
   }
 
-  if (!quote) {
+  if (!stock) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-green/5">
         <div className="text-center">
-          <TrendingUp className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+          <div className="w-20 h-20 bg-primary-orange/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertTriangle className="w-10 h-10 text-primary-orange" />
+          </div>
           <h1 className="text-2xl font-bold mb-4">Stock not found</h1>
           <p className="text-muted-foreground mb-6">
-            Unable to find data for ticker &quot;{ticker}&quot;. Please check
-            the symbol and try again.
+            The stock you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
           <Link href="/stocks">
-            <Button className="bg-primary-green hover:bg-primary-green/90">
+            <Button className="bg-primary-green hover:bg-primary-green/90 text-white">
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Stocks
             </Button>
           </Link>
@@ -138,11 +95,63 @@ export default function StockDetailPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-primary-green/5 relative">
-      <BackgroundCircles variant="sparse" />
+  const handleSubmitComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email && comment) {
+      window.location.href = `mailto:contact@investorsedge.com?subject=Comment on ${
+        stock.ticker
+      }&body=${encodeURIComponent(`From: ${email}\n\n${comment}`)}`;
+      setEmail("");
+      setComment("");
+    }
+  };
 
-      <div className="max-w-4xl mx-auto py-8 px-4">
+  // Generate highlights from stock data
+  const highlights = [
+    {
+      title: "Why " + stock.ticker + "?",
+      description:
+        stock.description ||
+        "A strong investment opportunity based on our analysis.",
+      icon: "check" as const,
+    },
+    {
+      title: "Current Status",
+      description:
+        stock.status === "active"
+          ? "Actively monitored with ongoing analysis."
+          : "This position has been closed.",
+      icon: stock.status === "active" ? ("up" as const) : ("down" as const),
+    },
+    {
+      title: "Outlook",
+      description: `Target price of ₦${stock.targetPrice.toFixed(
+        2
+      )} represents a ${(
+        ((stock.targetPrice - stock.entryPrice) / stock.entryPrice) *
+        100
+      ).toFixed(0)}% potential gain.`,
+      icon: "up" as const,
+    },
+  ];
+
+  const getIcon = (type: "check" | "down" | "up") => {
+    switch (type) {
+      case "check":
+        return <CheckCircle className="w-6 h-6 text-primary-green" />;
+      case "down":
+        return <TrendingDown className="w-6 h-6 text-primary-orange" />;
+      case "up":
+        return <TrendingUp className="w-6 h-6 text-primary-green" />;
+      default:
+        return <BarChart3 className="w-6 h-6 text-primary-green" />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-white to-primary-green/5 py-8 px-4 relative">
+      <BackgroundCircles variant="sparse" />
+      <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -153,352 +162,245 @@ export default function StockDetailPage() {
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary-green transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Stocks
+            Back to Stock Updates
           </Link>
         </motion.div>
 
-        {/* Stock Header Card */}
+        {/* Stock Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-white to-primary-green/5 rounded-2xl p-6 shadow-lg border-2 border-primary-green/20 mb-8"
         >
-          <Card className="mb-8 border-2 border-primary-green/20 overflow-hidden">
-            <div
-              className={`h-1.5 ${
-                isPositive
-                  ? "bg-gradient-to-r from-primary-green to-emerald-400"
-                  : "bg-gradient-to-r from-red-500 to-red-400"
-              }`}
-            />
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                    {quote.name}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-3 mt-3">
-                    <Badge className="bg-primary-green text-white px-4 py-1.5 text-sm font-mono">
-                      {quote.symbol}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Globe className="w-4 h-4" />
-                      {quote.exchange}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRefresh}
-                      disabled={refreshing}
-                      className="ml-auto"
-                    >
-                      <RefreshCw
-                        className={`w-4 h-4 mr-1 ${
-                          refreshing ? "animate-spin" : ""
-                        }`}
-                      />
-                      Refresh
-                    </Button>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-3xl md:text-4xl font-bold text-foreground">
-                    {formatPrice(quote.price, quote.currency)}
-                  </p>
-                  <div
-                    className={`flex items-center justify-end gap-2 mt-2 ${
-                      isPositive ? "text-primary-green" : "text-red-500"
-                    }`}
-                  >
-                    {isPositive ? (
-                      <ArrowUpRight className="w-5 h-5" />
-                    ) : (
-                      <ArrowDownRight className="w-5 h-5" />
-                    )}
-                    <span className="text-lg font-semibold">
-                      {formatPercentChange(quote.changePercent)}
-                    </span>
-                    <span className="text-muted-foreground">
-                      ({isPositive ? "+" : ""}
-                      {quote.change.toFixed(2)})
-                    </span>
-                  </div>
-                </div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                {stock.name}
+              </h1>
+              <div className="flex items-center flex-wrap gap-3 mt-3">
+                <span className="px-4 py-1.5 rounded-full bg-primary-green text-white font-semibold">
+                  Ticker: {stock.ticker}
+                </span>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium text-white ${
+                    sectorColors[stock.sector] || "bg-gray-500"
+                  }`}
+                >
+                  {sectorLabels[stock.sector] || stock.sector}
+                </span>
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  Added:{" "}
+                  {new Date(stock.dateAdded).toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            {stock.status === "closed" && (
+              <div className="px-4 py-2 bg-muted rounded-lg text-sm text-muted-foreground">
+                <span className="font-semibold">Closed Position</span>
+              </div>
+            )}
+          </div>
         </motion.div>
 
-        {/* Key Statistics */}
+        {/* Real-time Price Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="mb-8"
+        >
+          <StockPriceCard
+            ticker={stock.ticker}
+            isNigerian={true}
+            showDetails={true}
+          />
+        </motion.div>
+
+        {/* Analysis Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-primary-green mb-8"
         >
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-primary-green" />
-                Key Statistics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Open</p>
-                  <p className="text-lg font-semibold">
-                    {formatPrice(quote.open, quote.currency)}
-                  </p>
-                </div>
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">
-                    Previous Close
-                  </p>
-                  <p className="text-lg font-semibold">
-                    {formatPrice(quote.previousClose, quote.currency)}
-                  </p>
-                </div>
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Volume</p>
-                  <p className="text-lg font-semibold">
-                    {formatLargeNumber(quote.volume)}
-                  </p>
-                </div>
-                {quote.marketCap && quote.marketCap > 0 && (
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">
-                      Market Cap
-                    </p>
-                    <p className="text-lg font-semibold">
-                      {formatLargeNumber(quote.marketCap)}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Day Range */}
-              {quote.dayLow > 0 && quote.dayHigh > 0 && (
-                <div className="mt-6">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">Day Range</span>
-                    <span className="font-medium">
-                      {formatPrice(quote.dayLow, quote.currency)} -{" "}
-                      {formatPrice(quote.dayHigh, quote.currency)}
-                    </span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary-green to-emerald-400 rounded-full relative"
-                      style={{ width: `${getPriceRangePercent()}%` }}
-                    >
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-primary-green rounded-full" />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 52-Week Range */}
-              {quote.fiftyTwoWeekLow && quote.fiftyTwoWeekHigh && (
-                <div className="mt-4">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">52-Week Range</span>
-                    <span className="font-medium">
-                      {formatPrice(quote.fiftyTwoWeekLow, quote.currency)} -{" "}
-                      {formatPrice(quote.fiftyTwoWeekHigh, quote.currency)}
-                    </span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary-orange to-amber-400 rounded-full relative"
-                      style={{ width: `${get52WeekPercent()}%` }}
-                    >
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-primary-orange rounded-full" />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-primary-green" />
+            Analysis
+          </h2>
+          <div
+            className="prose prose-sm max-w-none text-muted-foreground leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: stock.analysis || "" }}
+          />
         </motion.div>
 
-        {/* Price History Chart Placeholder */}
+        {/* Highlights Grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
         >
-          <Card className="mb-8">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-primary-orange" />
-                  Price History
-                </CardTitle>
-                <div className="flex gap-1">
-                  {(["1d", "5d", "1mo", "3mo", "1y"] as const).map((range) => (
-                    <Button
-                      key={range}
-                      variant={selectedRange === range ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => setSelectedRange(range)}
-                      className={
-                        selectedRange === range
-                          ? "bg-primary-green hover:bg-primary-green/90"
-                          : ""
-                      }
-                    >
-                      {range.toUpperCase()}
-                    </Button>
-                  ))}
-                </div>
+          {highlights.map((highlight, index) => (
+            <div
+              key={index}
+              className="bg-gradient-to-br from-white to-primary-green/5 rounded-2xl p-5 shadow-lg border-2 border-primary-green/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                {getIcon(highlight.icon)}
+                <h3 className="font-bold text-foreground">{highlight.title}</h3>
               </div>
-            </CardHeader>
-            <CardContent>
-              {history.length > 0 ? (
-                <div className="space-y-4">
-                  {/* Simple price summary */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-3 bg-muted/50 rounded-lg text-center">
-                      <p className="text-xs text-muted-foreground mb-1">
-                        Start
-                      </p>
-                      <p className="font-semibold">
-                        {formatPrice(history[0].close, quote.currency)}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-muted/50 rounded-lg text-center">
-                      <p className="text-xs text-muted-foreground mb-1">End</p>
-                      <p className="font-semibold">
-                        {formatPrice(
-                          history[history.length - 1].close,
-                          quote.currency
-                        )}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-muted/50 rounded-lg text-center">
-                      <p className="text-xs text-muted-foreground mb-1">High</p>
-                      <p className="font-semibold text-primary-green">
-                        {formatPrice(
-                          Math.max(...history.map((h) => h.high)),
-                          quote.currency
-                        )}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-muted/50 rounded-lg text-center">
-                      <p className="text-xs text-muted-foreground mb-1">Low</p>
-                      <p className="font-semibold text-red-500">
-                        {formatPrice(
-                          Math.min(...history.map((h) => h.low)),
-                          quote.currency
-                        )}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Simple visual price indicator */}
-                  <div className="h-24 flex items-end gap-0.5">
-                    {history.slice(-30).map((day, i) => {
-                      const minPrice = Math.min(
-                        ...history.slice(-30).map((h) => h.low)
-                      );
-                      const maxPrice = Math.max(
-                        ...history.slice(-30).map((h) => h.high)
-                      );
-                      const height =
-                        ((day.close - minPrice) / (maxPrice - minPrice)) * 100;
-                      const isUp = day.close >= day.open;
-
-                      return (
-                        <div
-                          key={i}
-                          className={`flex-1 rounded-t transition-all hover:opacity-80 ${
-                            isUp ? "bg-primary-green" : "bg-red-400"
-                          }`}
-                          style={{ height: `${Math.max(height, 5)}%` }}
-                          title={`${day.date.toLocaleDateString()}: ${formatPrice(
-                            day.close,
-                            quote.currency
-                          )}`}
-                        />
-                      );
-                    })}
-                  </div>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Last {Math.min(30, history.length)} trading days
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Activity className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                  <p>Historical data unavailable</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              <p className="text-sm text-muted-foreground">
+                {highlight.description}
+              </p>
+            </div>
+          ))}
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* Trade Setup */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
+          className="bg-gradient-to-br from-primary-green/5 to-white rounded-2xl p-6 shadow-lg border-2 border-primary-green/20 mb-8"
         >
-          <Card className="mb-8 bg-gradient-to-br from-primary-green/5 to-white border-2 border-primary-green/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-primary-green" />
-                Quick Info
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-white rounded-lg border text-center">
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Current Price
-                  </div>
-                  <div className="text-2xl font-bold text-primary-green">
-                    {formatPrice(quote.price, quote.currency)}
-                  </div>
-                </div>
-                <div className="p-4 bg-white rounded-lg border text-center">
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Today&apos;s Change
-                  </div>
-                  <div
-                    className={`text-2xl font-bold ${
-                      isPositive ? "text-primary-green" : "text-red-500"
-                    }`}
-                  >
-                    {formatPercentChange(quote.changePercent)}
-                  </div>
-                </div>
-                <div className="p-4 bg-white rounded-lg border text-center">
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Trading Volume
-                  </div>
-                  <div className="text-2xl font-bold text-foreground">
-                    {formatLargeNumber(quote.volume)}
-                  </div>
-                </div>
+          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+            <Target className="w-5 h-5 text-primary-green" />
+            Trade Setup
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white rounded-xl p-5 text-center shadow border-2 border-primary-green/10 hover:border-primary-green/30 transition-colors">
+              <div className="text-sm text-muted-foreground mb-2">
+                Entry Price
               </div>
-            </CardContent>
-          </Card>
+              <div className="text-2xl font-bold text-primary-green">
+                ₦{stock.entryPrice.toFixed(2)}
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-5 text-center shadow border-2 border-primary-green/10 hover:border-primary-green/30 transition-colors">
+              <div className="text-sm text-muted-foreground mb-2">
+                Target Price
+              </div>
+              <div className="text-2xl font-bold text-primary-green">
+                ₦{stock.targetPrice.toFixed(2)}
+              </div>
+              <div className="text-xs text-primary-green mt-1">
+                +
+                {(
+                  ((stock.targetPrice - stock.entryPrice) / stock.entryPrice) *
+                  100
+                ).toFixed(0)}
+                % Potential
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-5 text-center shadow border-2 border-primary-orange/10 hover:border-primary-orange/30 transition-colors">
+              <div className="text-sm text-muted-foreground mb-2">
+                Stop Loss
+              </div>
+              <div className="text-2xl font-bold text-primary-orange">
+                ₦{stock.stopLoss.toFixed(2)}
+              </div>
+              <div className="text-xs text-primary-orange mt-1">
+                {(
+                  ((stock.stopLoss - stock.entryPrice) / stock.entryPrice) *
+                  100
+                ).toFixed(0)}
+                % Risk
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Closed Position Notes */}
+        {stock.status === "closed" && stock.closingNotes && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="bg-muted/50 rounded-2xl p-6 shadow-lg border border-border/50 mb-8"
+          >
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-muted-foreground" />
+              Closing Notes
+            </h2>
+            {stock.closingPrice && (
+              <p className="text-muted-foreground mb-3">
+                <span className="font-semibold">Closing Price:</span> ₦
+                {stock.closingPrice.toFixed(2)}
+                <span className="ml-2">
+                  (
+                  {(
+                    ((stock.closingPrice - stock.entryPrice) /
+                      stock.entryPrice) *
+                    100
+                  ).toFixed(1)}
+                  % {stock.closingPrice >= stock.entryPrice ? "gain" : "loss"})
+                </span>
+              </p>
+            )}
+            <div
+              className="prose prose-sm max-w-none text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: stock.closingNotes }}
+            />
+          </motion.div>
+        )}
+
+        {/* Comment Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white rounded-2xl p-6 shadow-lg border-2 border-border/50 mb-8"
+        >
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-primary-green" />
+            Share Your Thoughts
+          </h2>
+          <form onSubmit={handleSubmitComment} className="space-y-4">
+            <input
+              type="email"
+              placeholder="Your Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary-green focus:ring-2 focus:ring-primary-green/20 outline-none transition-all"
+            />
+            <textarea
+              placeholder="Leave a comment..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              required
+              rows={4}
+              className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary-green focus:ring-2 focus:ring-primary-green/20 outline-none transition-all resize-none"
+            />
+            <Button
+              type="submit"
+              className="bg-primary-green hover:bg-primary-green/90 text-white font-semibold px-6"
+            >
+              Send Comment
+            </Button>
+          </form>
         </motion.div>
 
         {/* Disclaimer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="p-4 bg-primary-orange/5 border border-primary-orange/20 rounded-xl mb-8"
+          transition={{ delay: 0.5 }}
+          className="p-4 bg-primary-orange/5 border-2 border-primary-orange/20 rounded-xl"
         >
           <p className="text-sm text-muted-foreground flex items-start gap-2">
             <AlertTriangle className="w-5 h-5 text-primary-orange flex-shrink-0 mt-0.5" />
             <span>
-              <strong className="text-primary-orange">Disclaimer:</strong> Stock
-              data is provided for informational purposes only. Prices may be
-              delayed up to 15 minutes. This is not financial advice. Always
-              conduct your own research and consult a licensed financial advisor
-              before making investment decisions.
+              <strong className="text-primary-orange">Disclaimer:</strong> This
+              is educational content only, not financial advice. Past
+              performance does not guarantee future results. Always conduct your
+              own research and consult a licensed financial advisor before
+              making investment decisions.
             </span>
           </p>
         </motion.div>
@@ -507,15 +409,16 @@ export default function StockDetailPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.6 }}
+          className="mt-8"
         >
           <Link href="/stocks">
             <Button
               variant="outline"
-              className="border-primary-green text-primary-green hover:bg-primary-green hover:text-white"
+              className="border-2 border-primary-green text-primary-green hover:bg-primary-green hover:text-white font-semibold"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Stocks
+              Back to Stock Updates
             </Button>
           </Link>
         </motion.div>

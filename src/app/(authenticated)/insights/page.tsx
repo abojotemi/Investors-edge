@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 import {
   Globe,
   TrendingUp,
@@ -12,20 +12,28 @@ import {
   Clock,
   BarChart3,
   Landmark,
+  Loader2,
+  X,
+  ArrowLeft,
+  Sparkles,
+  CalendarDays,
 } from "lucide-react";
 import PageFooter from "@/components/ui/page-footer";
 import BackgroundCircles from "@/components/ui/background-circles";
+import RichTextViewer from "@/components/ui/rich-text-viewer";
 import { cn } from "@/lib/utils";
+import type { WeeklyRecap } from "@/types/admin";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "@/config/firebase";
 
 type TabType = "weekly" | "sectors" | "macro";
-type weeklyRecapsType = {
-  id: number;
-  title: string;
-  date: string;
-  marketSentiment: "Bullish" | "Bearish" | "Neutral";
-  summary: string;
-  highlights: string[];
-};
 
 type sectorWatchType = {
   id: number;
@@ -59,14 +67,72 @@ const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
   { id: "macro", label: "Macro Events", icon: <Globe className="w-4 h-4" /> },
 ];
 
-const weeklyRecaps: weeklyRecapsType[] = [];
-
 const sectorWatch: sectorWatchType[] = [];
-
 const macroEvents: macroEventsType[] = [];
+
+const convertTimestamp = (timestamp: Timestamp | Date | undefined): Date => {
+  if (!timestamp) return new Date();
+  if (timestamp instanceof Timestamp) {
+    return timestamp.toDate();
+  }
+  return timestamp;
+};
 
 export default function InsightsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("weekly");
+  const [weeklyRecaps, setWeeklyRecaps] = useState<WeeklyRecap[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRecap, setSelectedRecap] = useState<WeeklyRecap | null>(null);
+
+  // Real-time listener for published weekly recaps
+  useEffect(() => {
+    const recapsQuery = query(
+      collection(db, "weeklyRecaps"),
+      where("status", "==", "published"),
+      orderBy("weekStartDate", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      recapsQuery,
+      (snapshot) => {
+        const fetchedRecaps: WeeklyRecap[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || "",
+            weekStartDate: convertTimestamp(data.weekStartDate),
+            weekEndDate: convertTimestamp(data.weekEndDate),
+            content: data.content || "",
+            highlights: data.highlights || [],
+            status: data.status,
+            createdAt: convertTimestamp(data.createdAt),
+            updatedAt: convertTimestamp(data.updatedAt),
+          } as WeeklyRecap;
+        });
+        setWeeklyRecaps(fetchedRecaps);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching recaps:", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  const formatDateRange = (start: Date, end: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+    };
+    const startStr = start.toLocaleDateString("en-US", options);
+    const endStr = end.toLocaleDateString("en-US", {
+      ...options,
+      year: "numeric",
+    });
+    return `${startStr} - ${endStr}`;
+  };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
@@ -87,17 +153,6 @@ export default function InsightsPage() {
         return "bg-primary-orange/10 text-primary-orange";
       default:
         return "bg-primary-green/10 text-primary-green";
-    }
-  };
-
-  const getSentimentColor = (sentiment: string) => {
-    switch (sentiment) {
-      case "Bullish":
-        return "bg-primary-green text-white";
-      case "Bearish":
-        return "bg-primary-peach text-white";
-      default:
-        return "bg-primary-orange text-white";
     }
   };
 
@@ -180,59 +235,56 @@ export default function InsightsPage() {
           >
             {/* Weekly Recaps */}
             {activeTab === "weekly" && (
-              <div className="space-y-6">
-                {weeklyRecaps.length !== 0 ? (
+              <div className="space-y-4">
+                {loading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
+                  </div>
+                ) : weeklyRecaps.length !== 0 ? (
                   weeklyRecaps.map((recap, index) => (
                     <motion.div
                       key={recap.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-primary-green hover:shadow-xl transition-all duration-300"
+                      onClick={() => setSelectedRecap(recap)}
+                      className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:border-primary-green/30 hover:shadow-xl transition-all duration-300 cursor-pointer group"
                     >
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
-                        <div>
-                          <h3 className="text-xl font-bold text-foreground mb-1">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-primary-green/20 to-primary-green/5 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                          <CalendarDays className="w-7 h-7 text-primary-green" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm text-muted-foreground">
+                              {formatDateRange(
+                                recap.weekStartDate,
+                                recap.weekEndDate
+                              )}
+                            </span>
+                          </div>
+                          <h3 className="text-xl font-bold text-foreground group-hover:text-primary-green transition-colors">
                             {recap.title}
                           </h3>
-                          <p className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {recap.date}
-                          </p>
-                        </div>
-                        <span
-                          className={cn(
-                            "px-4 py-1.5 rounded-full text-sm font-semibold",
-                            getSentimentColor(recap.marketSentiment)
+                          {recap.highlights.length > 0 && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <Sparkles className="w-4 h-4 text-primary-orange" />
+                              <span className="text-sm text-muted-foreground">
+                                {recap.highlights.length} key highlight
+                                {recap.highlights.length !== 1 ? "s" : ""}
+                              </span>
+                            </div>
                           )}
-                        >
-                          {recap.marketSentiment}
-                        </span>
-                      </div>
-                      <p className="text-muted-foreground mb-4">
-                        {recap.summary}
-                      </p>
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-foreground">
-                          Key Highlights:
-                        </h4>
-                        <ul className="space-y-1">
-                          {recap.highlights.map((highlight, i) => (
-                            <li
-                              key={i}
-                              className="flex items-start gap-2 text-sm text-muted-foreground"
-                            >
-                              <ChevronRight className="w-4 h-4 text-primary-green flex-shrink-0 mt-0.5" />
-                              {highlight}
-                            </li>
-                          ))}
-                        </ul>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary-green group-hover:translate-x-1 transition-all" />
                       </div>
                     </motion.div>
                   ))
                 ) : (
                   <div className="text-gray-500 col-span-full text-center py-8">
-                    Coming soon.
+                    <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p>No weekly recaps yet. Check back soon!</p>
                   </div>
                 )}
               </div>
@@ -368,33 +420,101 @@ export default function InsightsPage() {
               </div>
             )}
           </motion.div>
-
-          {/* Newsletter CTA
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-12 bg-gradient-to-r from-primary-green to-primary-green/80 rounded-2xl p-8 text-center text-white"
-          >
-            <h3 className="text-2xl font-bold mb-2">Never Miss an Update</h3>
-            <p className="text-white/80 mb-6">
-              Get weekly market insights delivered to your inbox every Monday
-              morning.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/60 focus:outline-none focus:border-white/40"
-              />
-              <button className="px-6 py-3 bg-white text-primary-green font-semibold rounded-xl hover:bg-white/90 transition-colors">
-                Subscribe
-              </button>
-            </div>
-          </motion.div> */}
         </div>
       </section>
 
+      {/* Recap Detail Modal */}
+      <AnimatePresence>
+        {selectedRecap && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedRecap(null)}
+              className="fixed inset-0 bg-black/50 z-40"
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed inset-4 md:inset-8 lg:inset-16 bg-white rounded-2xl z-50 overflow-hidden flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <button
+                  onClick={() => setSelectedRecap(null)}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Recaps
+                </button>
+                <button
+                  onClick={() => setSelectedRecap(null)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-8">
+                <div className="max-w-3xl mx-auto">
+                  {/* Date */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="w-5 h-5 text-primary-green" />
+                    <span className="text-primary-green font-medium">
+                      {formatDateRange(
+                        selectedRecap.weekStartDate,
+                        selectedRecap.weekEndDate
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                    {selectedRecap.title}
+                  </h1>
+
+                  {/* Highlights */}
+                  {selectedRecap.highlights.length > 0 && (
+                    <div className="bg-primary-green/5 rounded-xl p-6 mb-8">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Sparkles className="w-5 h-5 text-primary-orange" />
+                        <h2 className="text-lg font-semibold text-gray-900">
+                          Key Highlights
+                        </h2>
+                      </div>
+                      <ul className="space-y-2">
+                        {selectedRecap.highlights.map((highlight, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-3 text-gray-700"
+                          >
+                            <span className="w-6 h-6 bg-primary-green text-white rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 mt-0.5">
+                              {i + 1}
+                            </span>
+                            {highlight}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Full Content */}
+                  <div className="prose prose-lg max-w-none">
+                    <RichTextViewer content={selectedRecap.content} />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

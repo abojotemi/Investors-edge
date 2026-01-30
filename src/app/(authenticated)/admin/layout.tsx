@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Video,
-  FileText,
+  Calendar,
   Settings,
   LogOut,
   Menu,
@@ -16,6 +16,8 @@ import {
   Shield,
   Home,
   TrendingUp,
+  GraduationCap,
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useAdmin, AdminProvider } from "@/context/admin-context";
@@ -28,19 +30,29 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
+    label: "Courses",
+    href: "/admin/courses",
+    icon: GraduationCap,
+  },
+  {
     label: "Videos",
     href: "/admin/videos",
     icon: Video,
   },
   {
-    label: "Articles",
-    href: "/admin/articles",
-    icon: FileText,
+    label: "Weekly Recaps",
+    href: "/admin/recaps",
+    icon: Calendar,
   },
   {
     label: "Stocks",
     href: "/admin/stocks",
     icon: TrendingUp,
+  },
+  {
+    label: "Discussions",
+    href: "/admin/discussions",
+    icon: MessageSquare,
   },
   {
     label: "Settings",

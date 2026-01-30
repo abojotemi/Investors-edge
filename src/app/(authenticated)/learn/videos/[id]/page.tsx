@@ -166,7 +166,7 @@ export default function VideoPage() {
             removed.
           </p>
           <Button
-            onClick={() => router.push("/learn")}
+            onClick={() => router.push("/learn/videos")}
             className="bg-primary-green hover:bg-primary-green/90"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -190,7 +190,7 @@ export default function VideoPage() {
             className="mb-6"
           >
             <Link
-              href="/learn"
+              href="/learn/videos"
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />

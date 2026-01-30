@@ -1,23 +1,53 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MessageSquare,
-  ThumbsUp,
   Eye,
   Clock,
   Search,
   Filter,
-  TrendingUp,
   ChevronRight,
   MessageCircle,
   User,
   Pin,
   Flame,
+  Plus,
+  X,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BackgroundCircles from "@/components/ui/background-circles";
+import { useAuth } from "@/context/auth-context";
+import { addDiscussion, getDiscussions } from "@/lib/firebase/firestore";
+import { toast } from "sonner";
+import Link from "next/link";
+import type { Discussion, DiscussionCategory } from "@/types/admin";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  collection,
+  query,
+  orderBy,
+  onSnapshot,
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "@/config/firebase";
 
 const categories = [
   { id: "all", label: "All Topics" },
@@ -29,40 +59,146 @@ const categories = [
   { id: "strategies", label: "Investment Strategies" },
 ];
 
-interface Discussion {
-  id: string;
-  title: string;
-  preview: string;
-  category: string;
-  author: {
-    name: string;
-    avatar: string;
-  };
-  replies: number;
-  views: number;
-  lastActivity: string;
-  pinned?: boolean;
-  hot?: boolean;
-  avatar?: string;
-}
-
-const discussions: Discussion[] = [];
+const convertTimestamp = (timestamp: Timestamp | Date | undefined): Date => {
+  if (!timestamp) return new Date();
+  if (timestamp instanceof Timestamp) {
+    return timestamp.toDate();
+  }
+  return timestamp;
+};
 
 export default function ForumPage() {
+  const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [discussions, setDiscussions] = useState<Discussion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showNewDialog, setShowNewDialog] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [newDiscussion, setNewDiscussion] = useState({
+    title: "",
+    content: "",
+    category: "beginner" as DiscussionCategory,
+  });
+
+  // Real-time listener for discussions
+  useEffect(() => {
+    const discussionsQuery = query(
+      collection(db, "discussions"),
+      orderBy("lastActivityAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      discussionsQuery,
+      (snapshot) => {
+        const fetchedDiscussions: Discussion[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || "",
+            content: data.content || "",
+            category: data.category as DiscussionCategory,
+            author: data.author,
+            replies: (data.replies || []).map(
+              (reply: Record<string, unknown>) => ({
+                ...reply,
+                createdAt: convertTimestamp(reply.createdAt as Timestamp),
+              })
+            ),
+            replyCount: data.replyCount || 0,
+            viewCount: data.viewCount || 0,
+            pinned: data.pinned || false,
+            hot: data.hot || false,
+            status: data.status || "open",
+            createdAt: convertTimestamp(data.createdAt),
+            updatedAt: convertTimestamp(data.updatedAt),
+            lastActivityAt: convertTimestamp(data.lastActivityAt),
+          } as Discussion;
+        });
+        setDiscussions(fetchedDiscussions);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching discussions:", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleCreateDiscussion = async () => {
+    if (!user) {
+      toast.error("Please sign in to create a discussion");
+      return;
+    }
+
+    if (!newDiscussion.title.trim() || !newDiscussion.content.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await addDiscussion({
+        title: newDiscussion.title,
+        content: newDiscussion.content,
+        category: newDiscussion.category,
+        author: {
+          userId: user.uid,
+          name: user.displayName || "Anonymous",
+          email: user.email || "",
+          avatar: user.displayName?.charAt(0).toUpperCase() || "A",
+        },
+        status: "open",
+      });
+      toast.success("Discussion created successfully!");
+      setShowNewDialog(false);
+      setNewDiscussion({ title: "", content: "", category: "beginner" });
+    } catch (error) {
+      console.error("Error creating discussion:", error);
+      toast.error("Failed to create discussion");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const filteredDiscussions = discussions.filter((disc) => {
     const categoryMatch =
       selectedCategory === "all" || disc.category === selectedCategory;
     const searchMatch =
       disc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      disc.preview.toLowerCase().includes(searchQuery.toLowerCase());
+      disc.content.toLowerCase().includes(searchQuery.toLowerCase());
     return categoryMatch && searchMatch;
   });
 
   const pinnedDiscussions = filteredDiscussions.filter((d) => d.pinned);
   const regularDiscussions = filteredDiscussions.filter((d) => !d.pinned);
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-primary-green animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading discussions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 pt-24 pb-16 relative">
@@ -101,8 +237,11 @@ export default function ForumPage() {
               className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none transition-all"
             />
           </div>
-          <Button className="bg-primary-green hover:bg-primary-green/90 text-white px-6">
-            <MessageSquare className="w-4 h-4 mr-2" />
+          <Button
+            onClick={() => setShowNewDialog(true)}
+            className="bg-primary-green hover:bg-primary-green/90 text-white px-6"
+          >
+            <Plus className="w-4 h-4 mr-2" />
             New Discussion
           </Button>
         </motion.div>
@@ -151,7 +290,11 @@ export default function ForumPage() {
             </div>
             <div className="space-y-4">
               {pinnedDiscussions.map((discussion) => (
-                <DiscussionCard key={discussion.id} discussion={discussion} />
+                <DiscussionCard
+                  key={discussion.id}
+                  discussion={discussion}
+                  formatTimeAgo={formatTimeAgo}
+                />
               ))}
             </div>
           </motion.div>
@@ -177,7 +320,10 @@ export default function ForumPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index, duration: 0.4 }}
               >
-                <DiscussionCard discussion={discussion} />
+                <DiscussionCard
+                  discussion={discussion}
+                  formatTimeAgo={formatTimeAgo}
+                />
               </motion.div>
             ))}
           </div>
@@ -189,31 +335,117 @@ export default function ForumPage() {
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               No discussions found
             </h3>
-            <p className="text-gray-500">
-              Try a different search term or category.
+            <p className="text-gray-500 mb-4">
+              {discussions.length === 0
+                ? "Be the first to start a discussion!"
+                : "Try a different search term or category."}
             </p>
+            {discussions.length === 0 && (
+              <Button
+                onClick={() => setShowNewDialog(true)}
+                className="bg-primary-green hover:bg-primary-green/90"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Start a Discussion
+              </Button>
+            )}
           </div>
         )}
-
-        {/* Load More */}
-        <div className="text-center mt-8">
-          <Button
-            variant="outline"
-            className="border-gray-300 text-gray-600 hover:bg-gray-50"
-          >
-            Load More Discussions
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
       </div>
+
+      {/* New Discussion Dialog */}
+      <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Start a New Discussion</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                placeholder="What do you want to discuss?"
+                value={newDiscussion.title}
+                onChange={(e) =>
+                  setNewDiscussion({ ...newDiscussion, title: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={newDiscussion.category}
+                onValueChange={(value) =>
+                  setNewDiscussion({
+                    ...newDiscussion,
+                    category: value as DiscussionCategory,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories
+                    .filter((c) => c.id !== "all")
+                    .map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                placeholder="Share your thoughts, questions, or insights..."
+                rows={5}
+                value={newDiscussion.content}
+                onChange={(e) =>
+                  setNewDiscussion({
+                    ...newDiscussion,
+                    content: e.target.value,
+                  })
+                }
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowNewDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateDiscussion}
+              disabled={submitting}
+              className="bg-primary-green hover:bg-primary-green/90"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Create Discussion
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
 function DiscussionCard({
   discussion,
+  formatTimeAgo,
 }: {
-  discussion: (typeof discussions)[0];
+  discussion: Discussion;
+  formatTimeAgo: (date: Date) => string;
 }) {
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
@@ -228,50 +460,72 @@ function DiscussionCard({
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:border-primary-green/30 hover:shadow-md transition-all cursor-pointer group">
-      <div className="flex items-start gap-4">
-        <div className="hidden sm:flex w-12 h-12 bg-primary-green/10 rounded-full items-center justify-center flex-shrink-0">
-          <span className="text-primary-green font-semibold">
-            {discussion.avatar}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span
-              className={`text-xs font-medium px-2 py-1 rounded-full ${getCategoryColor(
-                discussion.category
-              )}`}
-            >
-              {categories.find((c) => c.id === discussion.category)?.label}
+    <Link href={`/community/forum/${discussion.id}`}>
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:border-primary-green/30 hover:shadow-md transition-all cursor-pointer group">
+        <div className="flex items-start gap-4">
+          <div className="hidden sm:flex w-12 h-12 bg-primary-green/10 rounded-full items-center justify-center flex-shrink-0">
+            <span className="text-primary-green font-semibold">
+              {discussion.author?.avatar ||
+                discussion.author?.name?.charAt(0) ||
+                "?"}
             </span>
-            {discussion.hot && (
-              <span className="flex items-center gap-1 text-xs font-medium text-primary-peach bg-primary-peach/10 px-2 py-1 rounded-full">
-                <Flame className="w-3 h-3" />
-                Hot
-              </span>
-            )}
-            {discussion.pinned && (
-              <Pin className="w-3 h-3 text-primary-orange" />
-            )}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-primary-green transition-colors">
-            {discussion.title}
-          </h3>
-          <p className="text-gray-500 text-sm mb-3 line-clamp-2">
-            {discussion.preview}
-          </p>
-          <div className="flex items-center gap-4 text-sm text-gray-400">
-            <div className="flex items-center gap-1">
-              <User className="w-4 h-4" />
-              {discussion.author.name}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span
+                className={`text-xs font-medium px-2 py-1 rounded-full ${getCategoryColor(
+                  discussion.category
+                )}`}
+              >
+                {categories.find((c) => c.id === discussion.category)?.label}
+              </span>
+              {discussion.hot && (
+                <span className="flex items-center gap-1 text-xs font-medium text-primary-peach bg-primary-peach/10 px-2 py-1 rounded-full">
+                  <Flame className="w-3 h-3" />
+                  Hot
+                </span>
+              )}
+              {discussion.pinned && (
+                <Pin className="w-3 h-3 text-primary-orange" />
+              )}
+              {discussion.status === "resolved" && (
+                <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                  Resolved
+                </span>
+              )}
+              {discussion.status === "closed" && (
+                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                  Closed
+                </span>
+              )}
             </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              {discussion.lastActivity}
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-primary-green transition-colors">
+              {discussion.title}
+            </h3>
+            <p className="text-gray-500 text-sm mb-3 line-clamp-2">
+              {discussion.content}
+            </p>
+            <div className="flex items-center gap-4 text-sm text-gray-400">
+              <div className="flex items-center gap-1">
+                <User className="w-4 h-4" />
+                {discussion.author?.name || "Anonymous"}
+              </div>
+              <div className="flex items-center gap-1">
+                <MessageCircle className="w-4 h-4" />
+                {discussion.replyCount} replies
+              </div>
+              <div className="flex items-center gap-1">
+                <Eye className="w-4 h-4" />
+                {discussion.viewCount} views
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                {formatTimeAgo(discussion.lastActivityAt)}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

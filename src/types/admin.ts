@@ -90,51 +90,146 @@ export interface AdminUser {
 export interface DashboardStats {
   totalVideos: number;
   totalArticles: number;
-  totalStocks: number;
+  totalCourses: number;
   publishedContent: number;
   draftContent: number;
 }
 
-// Stock Types
-export type StockStatus = "active" | "watchlist" | "closed";
-export type StockMarket = "US" | "NGX"; // US stocks or Nigerian Stock Exchange
+// ==================== COURSES ====================
 
-export type StockSector =
-  | "banking"
-  | "insurance"
-  | "construction"
-  | "industrial-goods"
-  | "consumer-goods"
-  | "oil-gas"
-  | "technology"
-  | "agriculture"
-  | "healthcare"
-  | "real-estate"
-  | "other";
+export type CourseCategory =
+  | "investing-basics"
+  | "stock-analysis"
+  | "portfolio-management"
+  | "trading-strategies"
+  | "financial-planning"
+  | "crypto";
 
-export interface StockHighlight {
+export type CourseDifficulty = "beginner" | "intermediate" | "advanced";
+
+export interface CourseLesson {
+  id: string;
   title: string;
   description: string;
-  icon: "check" | "down" | "up";
+  duration: string; // e.g., "10 min"
+  videoUrl?: string;
+  content?: string; // Rich text content for reading materials
+  order: number;
 }
 
-export interface StockTradeSetup {
-  buyRange: string;
-  targetProfit: string;
-  riskPrice: string;
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  thumbnailUrl: string;
+  category: CourseCategory;
+  difficulty: CourseDifficulty;
+  lessons: CourseLesson[];
+  totalDuration: string; // e.g., "2h 30min"
+  enrolledCount: number;
+  status: ContentStatus;
+  tags: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  author: string;
 }
+
+export interface UserCourseProgress {
+  id: string;
+  odUserId: string;
+  courseId: string;
+  completedLessons: string[]; // Array of lesson IDs that are completed
+  currentLessonId: string | null;
+  progressPercent: number; // 0-100
+  startedAt: Date;
+  lastAccessedAt: Date;
+  completedAt: Date | null;
+}
+
+export type StockStatus = "active" | "closed";
+export type StockSector =
+  | "technology"
+  | "healthcare"
+  | "finance"
+  | "energy"
+  | "consumer"
+  | "industrial"
+  | "materials"
+  | "utilities"
+  | "real-estate"
+  | "communication";
 
 export interface Stock {
   id: string;
   name: string;
   ticker: string;
-  market: StockMarket;
   sector: StockSector;
+  description: string;
+  analysis: string; // Rich text analysis
+  entryPrice: number;
+  targetPrice: number;
+  stopLoss: number;
   status: StockStatus;
-  analysis: string[];
-  highlights: StockHighlight[];
-  tradeSetup: StockTradeSetup;
+  dateAdded: Date;
+  dateClosed?: Date;
+  closingPrice?: number;
+  closingNotes?: string;
   createdAt: Date;
   updatedAt: Date;
-  author: string;
+}
+
+// Discussion types
+export type DiscussionCategory = 
+  | "beginner"
+  | "stocks"
+  | "real-estate"
+  | "crypto"
+  | "retirement"
+  | "strategies";
+
+export type DiscussionStatus = "open" | "closed" | "resolved";
+
+export interface DiscussionAuthor {
+  userId: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  isAdmin?: boolean;
+}
+
+export interface Reply {
+  id: string;
+  content: string;
+  author: DiscussionAuthor;
+  createdAt: Date;
+}
+
+export interface Discussion {
+  id: string;
+  title: string;
+  content: string;
+  category: DiscussionCategory;
+  author: DiscussionAuthor;
+  replies: Reply[];
+  replyCount: number;
+  viewCount: number;
+  pinned: boolean;
+  hot: boolean;
+  status: DiscussionStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  lastActivityAt: Date;
+}
+
+// Weekly Recap types
+export interface WeeklyRecap {
+  id: string;
+  title: string;
+  weekStartDate: Date;
+  weekEndDate: Date;
+  content: string; // Rich text content
+  highlights: string[]; // Key highlights of the week
+  status: ContentStatus;
+  createdAt: Date;
+  updatedAt: Date;
 }

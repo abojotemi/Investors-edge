@@ -11,6 +11,7 @@ import {
   Clock,
   ArrowRight,
   Plus,
+  GraduationCap,
 } from "lucide-react";
 import { useAdmin } from "@/context/admin-context";
 import { Button } from "@/components/ui/button";
@@ -39,12 +40,20 @@ const itemVariants = {
 };
 
 export default function AdminDashboard() {
-  const { stats, videos, articles } = useAdmin();
+  const { stats, videos, articles, courses } = useAdmin();
 
   const recentVideos = videos.slice(0, 3);
   const recentArticles = articles.slice(0, 3);
+  const recentCourses = courses.slice(0, 3);
 
   const statCards = [
+    {
+      label: "Total Courses",
+      value: stats.totalCourses,
+      icon: GraduationCap,
+      color: "bg-primary-green",
+      href: "/admin/courses",
+    },
     {
       label: "Total Videos",
       value: stats.totalVideos,
@@ -65,13 +74,6 @@ export default function AdminDashboard() {
       icon: Eye,
       color: "bg-green-500",
       href: "/admin/videos?status=published",
-    },
-    {
-      label: "Drafts",
-      value: stats.draftContent,
-      icon: Edit,
-      color: "bg-orange-500",
-      href: "/admin/articles?status=draft",
     },
   ];
 
@@ -146,8 +148,14 @@ export default function AdminDashboard() {
           Quick Actions
         </h2>
         <div className="flex flex-wrap gap-4">
-          <Link href="/admin/videos/new">
+          <Link href="/admin/courses/new">
             <Button className="bg-primary-green hover:bg-primary-green/90">
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Course
+            </Button>
+          </Link>
+          <Link href="/admin/videos/new">
+            <Button className="bg-blue-500 hover:bg-blue-500/90">
               <Plus className="w-4 h-4 mr-2" />
               Add New Video
             </Button>
@@ -162,7 +170,57 @@ export default function AdminDashboard() {
       </motion.div>
 
       {/* Recent Content */}
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Recent Courses */}
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <CardTitle className="text-xl">Recent Courses</CardTitle>
+              <Link
+                href="/admin/courses"
+                className="text-primary-green hover:underline text-sm flex items-center gap-1"
+              >
+                View All
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </CardHeader>
+            <CardContent className="p-0">
+              {recentCourses.length > 0 ? (
+                <div className="divide-y">
+                  {recentCourses.map((course) => (
+                    <Link
+                      key={course.id}
+                      href={`/admin/courses/${course.id}`}
+                      className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <GraduationCap className="w-6 h-6 text-primary-green" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">
+                          {course.title}
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="w-3 h-3" />
+                          <span>{formatDate(course.createdAt)}</span>
+                          <Badge variant={getStatusVariant(course.status)}>
+                            {course.status}
+                          </Badge>
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-muted-foreground" />
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center text-muted-foreground">
+                  <GraduationCap className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
+                  <p>No courses yet</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
         {/* Recent Videos */}
         <motion.div variants={itemVariants}>
           <Card>
