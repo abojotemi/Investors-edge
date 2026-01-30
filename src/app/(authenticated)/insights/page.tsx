@@ -33,7 +33,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/config/firebase";
 
-type TabType = "weekly" | "sectors" | "macro";
+type TabType = "weekly" | "sectors" ;
 
 type sectorWatchType = {
   id: number;
@@ -44,14 +44,6 @@ type sectorWatchType = {
   topPicks: string[];
 };
 
-type macroEventsType = {
-  id: number;
-  title: string;
-  date: string;
-  type: "Monetary Policy" | "Economic Data" | "Fiscal Policy" | "Regulatory";
-  impact: "High" | "Medium" | "Low";
-  description: string;
-};
 
 const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
   {
@@ -64,11 +56,9 @@ const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
     label: "Sector Watch",
     icon: <Building2 className="w-4 h-4" />,
   },
-  { id: "macro", label: "Macro Events", icon: <Globe className="w-4 h-4" /> },
 ];
 
 const sectorWatch: sectorWatchType[] = [];
-const macroEvents: macroEventsType[] = [];
 
 const convertTimestamp = (timestamp: Timestamp | Date | undefined): Date => {
   if (!timestamp) return new Date();
@@ -358,67 +348,6 @@ export default function InsightsPage() {
               </div>
             )}
 
-            {/* Macro Events */}
-            {activeTab === "macro" && (
-              <div className="space-y-4">
-                {macroEvents.length !== 0 ? (
-                  macroEvents.map((event, index) => (
-                    <motion.div
-                      key={event.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl transition-all duration-300"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-primary-green/10 flex items-center justify-center flex-shrink-0">
-                          {event.type === "Monetary Policy" ? (
-                            <Landmark className="w-7 h-7 text-primary-green" />
-                          ) : event.type === "Economic Data" ? (
-                            <BarChart3 className="w-7 h-7 text-primary-green" />
-                          ) : event.type === "Regulatory" ? (
-                            <Building2 className="w-7 h-7 text-primary-green" />
-                          ) : (
-                            <Newspaper className="w-7 h-7 text-primary-green" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
-                            <h3 className="text-lg font-bold text-foreground">
-                              {event.title}
-                            </h3>
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={cn(
-                                  "px-3 py-1 rounded-full text-xs font-semibold",
-                                  getImpactColor(event.impact)
-                                )}
-                              >
-                                {event.impact} Impact
-                              </span>
-                              <span className="text-sm text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {event.date}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-muted-foreground">
-                            {event.description}
-                          </p>
-                          <span className="inline-block mt-2 px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
-                            {event.type}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="text-gray-500 col-span-full text-center py-8">
-                    Coming soon.
-                  </div>
-                )}
-              </div>
-            )}
           </motion.div>
         </div>
       </section>
