@@ -301,7 +301,7 @@ export default function LearnPage() {
   });
 
   return (
-    <div className="min-h-screen overflow-x-hidden relative flex flex-col">
+    <div className="min-h-screen overflow-x-hidden relative flex flex-col bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10">
       <BackgroundCircles variant="dense" />
 
       <section className="relative py-6 sm:py-8 md:py-10 px-4 bg-gradient-to-br from-primary-peach/5 via-background to-primary-green/5 overflow-hidden flex-1">

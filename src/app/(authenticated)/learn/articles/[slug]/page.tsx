@@ -193,7 +193,7 @@ export default function ArticlePage() {
 
   if (loading || contentLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-primary-green animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading article...</p>
@@ -204,7 +204,7 @@ export default function ArticlePage() {
 
   if (notFound || !article) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10">
         <div className="text-center max-w-md px-4">
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <FileText className="w-10 h-10 text-gray-400" />
@@ -229,7 +229,7 @@ export default function ArticlePage() {
   }
 
   return (
-    <div className="min-h-screen overflow-x-hidden relative flex flex-col">
+    <div className="min-h-screen overflow-x-hidden relative flex flex-col bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10">
       <BackgroundCircles variant="dense" />
 
       <section className="relative py-6 sm:py-8 md:py-12 px-4 bg-gradient-to-br from-primary-peach/10 via-background to-primary-green/10 flex-1">

@@ -63,7 +63,7 @@ export default function StockDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-green/5">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-primary-green animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Loading stock details...</p>
@@ -74,7 +74,7 @@ export default function StockDetailPage() {
 
   if (!stock) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-primary-green/5">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10">
         <div className="text-center">
           <div className="w-20 h-20 bg-primary-orange/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertTriangle className="w-10 h-10 text-primary-orange" />
@@ -149,7 +149,7 @@ export default function StockDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-primary-green/5 py-8 px-4 relative">
+    <div className="min-h-screen bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10 py-8 px-4 relative">
       <BackgroundCircles variant="sparse" />
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}

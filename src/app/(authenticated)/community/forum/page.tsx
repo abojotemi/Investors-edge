@@ -4,42 +4,23 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import {
   MessageSquare,
-  Eye,
   Clock,
-  Search,
-  Filter,
-  ChevronRight,
   MessageCircle,
   User,
   Pin,
-  Flame,
   Plus,
-  X,
   Loader2,
+  CheckCircle2,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BackgroundCircles from "@/components/ui/background-circles";
 import { useAuth } from "@/context/auth-context";
-import { addDiscussion, getDiscussions } from "@/lib/firebase/firestore";
+import { addDiscussion } from "@/lib/firebase/firestore";
 import { toast } from "sonner";
 import Link from "next/link";
+import Image from "next/image";
 import type { Discussion, DiscussionCategory } from "@/types/admin";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   collection,
   query,
@@ -69,17 +50,11 @@ const convertTimestamp = (timestamp: Timestamp | Date | undefined): Date => {
 
 export default function ForumPage() {
   const { user } = useAuth();
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showNewDialog, setShowNewDialog] = useState(false);
+  const [questionText, setQuestionText] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [newDiscussion, setNewDiscussion] = useState({
-    title: "",
-    content: "",
-    category: "beginner" as DiscussionCategory,
-  });
 
   // Real-time listener for discussions
   useEffect(() => {
@@ -127,23 +102,23 @@ export default function ForumPage() {
     return () => unsubscribe();
   }, []);
 
-  const handleCreateDiscussion = async () => {
+  const handleSubmitQuestion = async () => {
     if (!user) {
-      toast.error("Please sign in to create a discussion");
+      toast.error("Please sign in to ask a question");
       return;
     }
 
-    if (!newDiscussion.title.trim() || !newDiscussion.content.trim()) {
-      toast.error("Please fill in all fields");
+    if (!questionText.trim()) {
+      toast.error("Please type your question");
       return;
     }
 
     setSubmitting(true);
     try {
       await addDiscussion({
-        title: newDiscussion.title,
-        content: newDiscussion.content,
-        category: newDiscussion.category,
+        title: questionText.trim(),
+        content: questionText.trim(),
+        category: "beginner" as DiscussionCategory,
         author: {
           userId: user.uid,
           name: user.displayName || "Anonymous",
@@ -152,28 +127,18 @@ export default function ForumPage() {
         },
         status: "open",
       });
-      toast.success("Discussion created successfully!");
-      setShowNewDialog(false);
-      setNewDiscussion({ title: "", content: "", category: "beginner" });
+      toast.success("Your question has been submitted!");
+      setQuestionText("");
     } catch (error) {
-      console.error("Error creating discussion:", error);
-      toast.error("Failed to create discussion");
+      console.error("Error submitting question:", error);
+      toast.error("Failed to submit question");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const filteredDiscussions = discussions.filter((disc) => {
-    const categoryMatch =
-      selectedCategory === "all" || disc.category === selectedCategory;
-    const searchMatch =
-      disc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      disc.content.toLowerCase().includes(searchQuery.toLowerCase());
-    return categoryMatch && searchMatch;
-  });
-
-  const pinnedDiscussions = filteredDiscussions.filter((d) => d.pinned);
-  const regularDiscussions = filteredDiscussions.filter((d) => !d.pinned);
+  const pinnedDiscussions = discussions.filter((d) => d.pinned);
+  const regularDiscussions = discussions.filter((d) => !d.pinned);
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
@@ -191,106 +156,110 @@ export default function ForumPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-primary-green animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading discussions...</p>
+          <p className="text-gray-600">Loading questions...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 pt-24 pb-16 relative">
+    <div className="min-h-screen bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10 pt-24 pb-16 relative">
       <BackgroundCircles variant="sparse" />
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-10"
         >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Discussion <span className="text-primary-green">Forum</span>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Anything bothering you about{" "}
+            <span className="text-primary-green">investing</span>?
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Ask questions, share insights, and learn from fellow investors in
-            our community.
+          <p className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+            Ask <span className="text-primary-green">Your Question</span>
           </p>
-        </motion.div>
 
-        {/* Search and New Post */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 mb-8"
-        >
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search discussions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-green focus:border-transparent outline-none transition-all"
-            />
-          </div>
-          <Button
-            onClick={() => setShowNewDialog(true)}
-            className="bg-primary-green hover:bg-primary-green/90 text-white px-6"
+          {/* Hero Illustration */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex justify-center mb-8"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            New Discussion
-          </Button>
+            <Image
+              src="/forum-hero.png"
+              alt="People discussing investing"
+              width={340}
+              height={260}
+              className="w-auto h-auto max-h-[240px]"
+              priority
+            />
+          </motion.div>
+
+          {/* Question Input */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto"
+          >
+            <div className="relative flex-1">
+              <MessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Ask your question..."
+                value={questionText}
+                onChange={(e) => setQuestionText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !submitting) handleSubmitQuestion();
+                }}
+                className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-green focus:border-primary-green outline-none transition-all text-gray-900 placeholder-gray-400"
+              />
+            </div>
+            <Button
+              onClick={handleSubmitQuestion}
+              disabled={submitting || !questionText.trim()}
+              className="bg-primary-green hover:bg-primary-green/90 text-white px-6 py-3.5 h-auto rounded-xl font-semibold text-base whitespace-nowrap disabled:opacity-50"
+            >
+              {submitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Submit Question
+                </>
+              )}
+            </Button>
+          </motion.div>
         </motion.div>
 
-        {/* Categories */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          className="mb-8"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-4 h-4 text-gray-600" />
-            <span className="text-sm font-medium text-gray-600">
-              Filter by topic
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  selectedCategory === category.id
-                    ? "bg-primary-green text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
-        </motion.div>
+        {/* Divider */}
+        {discussions.length > 0 && (
+          <div className="border-t border-gray-200 my-8" />
+        )}
 
-        {/* Pinned Discussions */}
+        {/* Pinned Questions */}
         {pinnedDiscussions.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="mb-8"
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="mb-6"
           >
             <div className="flex items-center gap-2 mb-4">
               <Pin className="w-4 h-4 text-primary-orange" />
-              <span className="text-sm font-medium text-gray-600">Pinned</span>
+              <span className="text-sm font-semibold text-gray-600">
+                Pinned
+              </span>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {pinnedDiscussions.map((discussion) => (
-                <DiscussionCard
+                <QuestionCard
                   key={discussion.id}
                   discussion={discussion}
                   formatTimeAgo={formatTimeAgo}
@@ -300,229 +269,122 @@ export default function ForumPage() {
           </motion.div>
         )}
 
-        {/* Regular Discussions */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <MessageCircle className="w-4 h-4 text-gray-600" />
-            <span className="text-sm font-medium text-gray-600">
-              Recent Discussions
-            </span>
-          </div>
-          <div className="space-y-4">
-            {regularDiscussions.map((discussion, index) => (
-              <motion.div
-                key={discussion.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * index, duration: 0.4 }}
-              >
-                <DiscussionCard
-                  discussion={discussion}
-                  formatTimeAgo={formatTimeAgo}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        {/* All Questions */}
+        {regularDiscussions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <MessageCircle className="w-4 h-4 text-gray-600" />
+              <span className="text-sm font-semibold text-gray-600">
+                Recent Questions
+              </span>
+            </div>
+            <div className="space-y-3">
+              {regularDiscussions.map((discussion, index) => (
+                <motion.div
+                  key={discussion.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * index, duration: 0.4 }}
+                >
+                  <QuestionCard
+                    discussion={discussion}
+                    formatTimeAgo={formatTimeAgo}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
-        {filteredDiscussions.length === 0 && (
-          <div className="text-center py-16">
-            <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No discussions found
+        {/* Empty State */}
+        {discussions.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-center py-12"
+          >
+            <MessageSquare className="w-14 h-14 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No questions yet
             </h3>
-            <p className="text-gray-500 mb-4">
-              {discussions.length === 0
-                ? "Be the first to start a discussion!"
-                : "Try a different search term or category."}
+            <p className="text-gray-500">
+              Be the first to ask a question above!
             </p>
-            {discussions.length === 0 && (
-              <Button
-                onClick={() => setShowNewDialog(true)}
-                className="bg-primary-green hover:bg-primary-green/90"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Start a Discussion
-              </Button>
-            )}
-          </div>
+          </motion.div>
         )}
       </div>
-
-      {/* New Discussion Dialog */}
-      <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Start a New Discussion</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                placeholder="What do you want to discuss?"
-                value={newDiscussion.title}
-                onChange={(e) =>
-                  setNewDiscussion({ ...newDiscussion, title: e.target.value })
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={newDiscussion.category}
-                onValueChange={(value) =>
-                  setNewDiscussion({
-                    ...newDiscussion,
-                    category: value as DiscussionCategory,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories
-                    .filter((c) => c.id !== "all")
-                    .map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="content">Content</Label>
-              <Textarea
-                id="content"
-                placeholder="Share your thoughts, questions, or insights..."
-                rows={5}
-                value={newDiscussion.content}
-                onChange={(e) =>
-                  setNewDiscussion({
-                    ...newDiscussion,
-                    content: e.target.value,
-                  })
-                }
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setShowNewDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateDiscussion}
-              disabled={submitting}
-              className="bg-primary-green hover:bg-primary-green/90"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Create Discussion
-                </>
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
 
-function DiscussionCard({
+// --- Question Card ---
+function QuestionCard({
   discussion,
   formatTimeAgo,
 }: {
   discussion: Discussion;
   formatTimeAgo: (date: Date) => string;
 }) {
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      beginner: "bg-green-100 text-green-700",
-      stocks: "bg-blue-100 text-blue-700",
-      "real-estate": "bg-purple-100 text-purple-700",
-      crypto: "bg-orange-100 text-orange-700",
-      retirement: "bg-pink-100 text-pink-700",
-      strategies: "bg-indigo-100 text-indigo-700",
-    };
-    return colors[category] || "bg-gray-100 text-gray-700";
-  };
+  const hasAdminReply = discussion.replies?.some(
+    (r) => r.author?.isAdmin
+  );
 
   return (
     <Link href={`/community/forum/${discussion.id}`}>
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:border-primary-green/30 hover:shadow-md transition-all cursor-pointer group">
+      <div className="bg-white rounded-xl p-5 border border-gray-100 hover:border-primary-green/30 hover:shadow-md transition-all cursor-pointer group">
         <div className="flex items-start gap-4">
-          <div className="hidden sm:flex w-12 h-12 bg-primary-green/10 rounded-full items-center justify-center flex-shrink-0">
-            <span className="text-primary-green font-semibold">
+          {/* Avatar */}
+          <div className="hidden sm:flex w-10 h-10 bg-primary-green/10 rounded-full items-center justify-center flex-shrink-0">
+            <span className="text-primary-green font-semibold text-sm">
               {discussion.author?.avatar ||
                 discussion.author?.name?.charAt(0) ||
                 "?"}
             </span>
           </div>
+
+          {/* Content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span
-                className={`text-xs font-medium px-2 py-1 rounded-full ${getCategoryColor(
-                  discussion.category
-                )}`}
-              >
-                {categories.find((c) => c.id === discussion.category)?.label}
-              </span>
-              {discussion.hot && (
-                <span className="flex items-center gap-1 text-xs font-medium text-primary-peach bg-primary-peach/10 px-2 py-1 rounded-full">
-                  <Flame className="w-3 h-3" />
-                  Hot
-                </span>
-              )}
-              {discussion.pinned && (
-                <Pin className="w-3 h-3 text-primary-orange" />
-              )}
-              {discussion.status === "resolved" && (
-                <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                  Resolved
-                </span>
-              )}
-              {discussion.status === "closed" && (
-                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-                  Closed
-                </span>
-              )}
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-primary-green transition-colors">
+            <h3 className="text-base font-semibold text-gray-900 mb-1 group-hover:text-primary-green transition-colors line-clamp-2">
               {discussion.title}
             </h3>
-            <p className="text-gray-500 text-sm mb-3 line-clamp-2">
-              {discussion.content}
-            </p>
-            <div className="flex items-center gap-4 text-sm text-gray-400">
-              <div className="flex items-center gap-1">
-                <User className="w-4 h-4" />
+
+            {/* Meta info */}
+            <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
+              <span className="flex items-center gap-1">
+                <User className="w-3.5 h-3.5" />
                 {discussion.author?.name || "Anonymous"}
-              </div>
-              <div className="flex items-center gap-1">
-                <MessageCircle className="w-4 h-4" />
-                {discussion.replyCount} replies
-              </div>
-              <div className="flex items-center gap-1">
-                <Eye className="w-4 h-4" />
-                {discussion.viewCount} views
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
                 {formatTimeAgo(discussion.lastActivityAt)}
-              </div>
+              </span>
+              <span className="flex items-center gap-1">
+                <MessageCircle className="w-3.5 h-3.5" />
+                {discussion.replyCount}{" "}
+                {discussion.replyCount === 1 ? "reply" : "replies"}
+              </span>
             </div>
+
+            {/* Admin answered badge */}
+            {hasAdminReply && (
+              <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-green/10 text-primary-green rounded-full text-xs font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Answered
+              </div>
+            )}
+
+            {/* Status badges */}
+            {discussion.status === "resolved" && !hasAdminReply && (
+              <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Resolved
+              </div>
+            )}
           </div>
         </div>
       </div>

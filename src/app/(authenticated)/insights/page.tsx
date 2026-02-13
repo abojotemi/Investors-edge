@@ -58,7 +58,89 @@ const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-const sectorWatch: sectorWatchType[] = [];
+const sectorWatch: sectorWatchType[] = [
+  {
+    id: 1,
+    name: "Agriculture",
+    trend: "up",
+    performance: "+3.2%",
+    outlook:
+      "Strong demand for agro-commodities and government support driving growth in the sector.",
+    topPicks: ["OKOMUOIL", "PRESCO", "LIVESTOCK"],
+  },
+  {
+    id: 2,
+    name: "Banking",
+    trend: "up",
+    performance: "+5.1%",
+    outlook:
+      "Recapitalization efforts and strong earnings reports boosting investor confidence.",
+    topPicks: ["GTCO", "ZENITHBANK", "ACCESSCORP", "UBA"],
+  },
+  {
+    id: 3,
+    name: "Consumer Goods",
+    trend: "down",
+    performance: "-1.8%",
+    outlook:
+      "Rising input costs and inflationary pressures weighing on margins despite resilient demand.",
+    topPicks: ["NESTLE", "BUA FOODS", "DANGSUGAR"],
+  },
+  {
+    id: 4,
+    name: "Industrial Goods",
+    trend: "up",
+    performance: "+4.7%",
+    outlook:
+      "Infrastructure spending and construction activity fueling demand for cement and building materials.",
+    topPicks: ["DANGCEM", "BUA CEMENT", "WAPCO"],
+  },
+  {
+    id: 5,
+    name: "Insurance",
+    trend: "neutral",
+    performance: "+0.4%",
+    outlook:
+      "Sector consolidation underway with recapitalization requirements creating both risks and opportunities.",
+    topPicks: ["AIICO", "CORNERST", "MANSARD"],
+  },
+  {
+    id: 6,
+    name: "Oil & Gas",
+    trend: "up",
+    performance: "+6.3%",
+    outlook:
+      "Higher crude oil prices and PIA reforms attracting renewed investment into the sector.",
+    topPicks: ["SEPLAT", "TOTAL", "OANDO"],
+  },
+  {
+    id: 7,
+    name: "Healthcare",
+    trend: "neutral",
+    performance: "+0.9%",
+    outlook:
+      "Growing health awareness and local manufacturing push, but FX challenges persist.",
+    topPicks: ["FIDSON", "GLAXOSMITH", "NEIMETH"],
+  },
+  {
+    id: 8,
+    name: "ICT",
+    trend: "up",
+    performance: "+3.8%",
+    outlook:
+      "Digital transformation and growing data demand continuing to drive tech sector performance.",
+    topPicks: ["MTNN", "AIRTELAFRI", "CWG"],
+  },
+  {
+    id: 9,
+    name: "Real Estate",
+    trend: "down",
+    performance: "-0.6%",
+    outlook:
+      "High interest rates dampening property demand, though select REITs remain attractive.",
+    topPicks: ["UPDC", "UACN PROP", "AFRILAND"],
+  },
+];
 
 const convertTimestamp = (timestamp: Timestamp | Date | undefined): Date => {
   if (!timestamp) return new Date();
@@ -147,7 +229,7 @@ export default function InsightsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-primary-green/5 relative flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10 relative flex flex-col">
       <BackgroundCircles />
       {/* Hero Section */}
       <section className="relative py-16 px-4 overflow-hidden flex-1">

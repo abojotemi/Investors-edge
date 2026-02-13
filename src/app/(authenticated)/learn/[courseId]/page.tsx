@@ -18,6 +18,23 @@ import {
 import { cn } from "@/lib/utils";
 import RichTextViewer from "@/components/ui/rich-text-viewer";
 
+// Convert Vimeo/YouTube URLs to embed format
+function getEmbedUrl(url: string): string {
+  // Vimeo: extract ID from various formats
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) {
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  }
+  // YouTube
+  const ytMatch = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/
+  );
+  if (ytMatch) {
+    return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  }
+  return url;
+}
+
 export default function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const {
@@ -162,16 +179,22 @@ export default function CourseDetailPage() {
         <p className="text-muted-foreground text-sm mb-4">
           {currentLesson.description}
         </p>
-        {currentLesson.videoUrl && (
-          <div className="aspect-video mb-4">
-            <iframe
-              src={currentLesson.videoUrl}
-              title={currentLesson.title}
-              allowFullScreen
-              className="w-full h-full rounded-lg border"
-            />
-          </div>
-        )}
+        {currentLesson.videoUrl && (() => {
+          const embedUrl = getEmbedUrl(currentLesson.videoUrl);
+          return (
+            <div className="flex justify-center mb-4">
+              <div className="w-full max-w-[400px] aspect-[9/16]">
+                <iframe
+                  src={embedUrl}
+                  title={currentLesson.title}
+                  allowFullScreen
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  className="w-full h-full rounded-lg border"
+                />
+              </div>
+            </div>
+          );
+        })()}
         {currentLesson.content && (
           <RichTextViewer content={currentLesson.content} />
         )}

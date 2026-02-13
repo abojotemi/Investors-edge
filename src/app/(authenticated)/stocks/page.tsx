@@ -47,7 +47,7 @@ export default function StocksPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-primary-green animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading stock recommendations...</p>
@@ -57,7 +57,7 @@ export default function StocksPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-primary-green/5 relative flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10 relative flex flex-col">
       <BackgroundCircles />
       {/* Hero Section */}
       <section className="relative py-20 px-4 overflow-hidden flex-1">

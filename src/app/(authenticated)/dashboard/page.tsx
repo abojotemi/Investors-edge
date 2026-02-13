@@ -137,7 +137,7 @@ export default function DashboardPage() {
   const periods = ["1W", "1M", "3M", "6M", "1Y", "ALL"];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-24 pb-16 relative">
+    <div className="min-h-screen bg-gradient-to-b from-primary-green/5 via-white to-primary-green/10 pt-24 pb-16 relative">
       <BackgroundCircles variant="sparse" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}

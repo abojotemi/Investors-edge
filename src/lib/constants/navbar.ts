@@ -57,6 +57,12 @@ export const investmentItems: {
     description:
       "Weekly analysis, economic trends, and expert investment perspectives.",
   },
+  {
+    title: "Portfolio Journey",
+    href: "/portfolio-journey",
+    description:
+      "Set investment goals, choose your risk approach, and visualize compounding growth.",
+  },
 ];
 
 export const communityItems: {

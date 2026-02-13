@@ -105,7 +105,7 @@ export default function OpportunitiesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 pt-24 pb-16 relative flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-primary-green/5 via-primary-orange/5 to-primary-green/10 pt-24 pb-16 relative flex flex-col">
       <BackgroundCircles variant="dense" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex-1">
         {/* Header */}
