@@ -1,0 +1,119 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper functions ───────────────────────────────────────────────────
+
+    // Is the request from a signed-in user?
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Is the signed-in user an admin?
+    // Reads the role field from the user's own Firestore document.
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ─── users ───────────────────────────────────────────────────────────────
+    // • Any authenticated user can read and update their OWN document.
+    // • Admins can read any user document (to look up roles, profiles etc.).
+    // • Only the user themself can create their document (via sign-up flow).
+    // • No one can delete a user document through the client SDK.
+
+    match /users/{userId} {
+      allow read:   if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow create: if isAuth() && request.auth.uid == userId;
+      allow update: if isAuth() && (request.auth.uid == userId || isAdmin());
+      allow delete: if false;
+    }
+
+    // ─── videos ──────────────────────────────────────────────────────────────
+    // • Published videos are readable by any signed-in user.
+    // • Admins can read ALL videos (including drafts) and do full CRUD.
+
+    match /videos/{videoId} {
+      allow read:   if isAuth() && (resource.data.status == 'published' || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─── articles ────────────────────────────────────────────────────────────
+    // • Published articles are readable by any signed-in user.
+    // • Admins can read ALL articles and do full CRUD.
+
+    match /articles/{articleId} {
+      allow read:   if isAuth() && (resource.data.status == 'published' || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─── courses ─────────────────────────────────────────────────────────────
+    // • Published courses are readable by any signed-in user.
+    // • Admins can read ALL courses and do full CRUD.
+
+    match /courses/{courseId} {
+      allow read:   if isAuth() && (resource.data.status == 'published' || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─── courseProgress ──────────────────────────────────────────────────────
+    // • Each user can read and write their OWN progress documents only.
+    // • Progress document IDs follow the pattern: {userId}_{courseId}
+    // • Admins can also read all progress records.
+
+    match /courseProgress/{progressId} {
+      allow read:   if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ─── stocks ──────────────────────────────────────────────────────────────
+    // • All stocks are readable by any signed-in user.
+    // • Only admins can create, update, or delete stocks.
+
+    match /stocks/{stockId} {
+      allow read:   if isAuth();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─── discussions ─────────────────────────────────────────────────────────
+    // • All discussions are readable by any signed-in user.
+    // • Any signed-in user can create a discussion or add a reply (update).
+    // • Only admins can delete discussions.
+
+    match /discussions/{discussionId} {
+      allow read:   if isAuth();
+      allow create: if isAuth();
+      allow update: if isAuth();
+      allow delete: if isAdmin();
+    }
+
+    // ─── weeklyRecaps ────────────────────────────────────────────────────────
+    // • Published recaps are readable by any signed-in user.
+    // • Admins can read ALL recaps and do full CRUD.
+
+    match /weeklyRecaps/{recapId} {
+      allow read:   if isAuth() && (resource.data.status == 'published' || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─── sectorWatch ─────────────────────────────────────────────────────────
+    // • Published sectors are readable by any signed-in user.
+    // • Admins can read ALL sectors and do full CRUD.
+
+    match /sectorWatch/{sectorId} {
+      allow read:   if isAuth() && (resource.data.status == 'published' || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ─── settings ────────────────────────────────────────────────────────────
+    // • Only admins can read or write site settings.
+
+    match /settings/{settingId} {
+      allow read, write: if isAdmin();
+    }
+
+  }
+}

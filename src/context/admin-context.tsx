@@ -36,7 +36,6 @@ import type {
 
 interface AdminContextType {
   isAdmin: boolean;
-  isSuperAdmin: boolean;
   adminLoading: boolean;
   adminUser: AdminUser | null;
   videos: Video[];
@@ -98,7 +97,6 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
     userProfile,
     loading: authLoading,
     isAdmin: authIsAdmin,
-    isSuperAdmin: authIsSuperAdmin,
   } = useAuth();
   const [dataLoading, setDataLoading] = useState(true);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -109,10 +107,6 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
   const isAdmin = useMemo(
     () => !authLoading && authIsAdmin,
     [authLoading, authIsAdmin]
-  );
-  const isSuperAdmin = useMemo(
-    () => !authLoading && authIsSuperAdmin,
-    [authLoading, authIsSuperAdmin]
   );
   const adminLoading = authLoading;
 
@@ -290,7 +284,6 @@ export const AdminProvider = ({ children }: AdminProviderProps) => {
 
   const value: AdminContextType = {
     isAdmin,
-    isSuperAdmin,
     adminLoading,
     adminUser,
     videos,

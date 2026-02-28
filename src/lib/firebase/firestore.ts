@@ -1295,3 +1295,94 @@ export const deleteWeeklyRecap = async (id: string): Promise<void> => {
     throw error;
   }
 };
+
+// ==================== SECTOR WATCH ====================
+
+import type { SectorWatch, SectorTrend } from "@/types/admin";
+
+export const sectorWatchCollection = collection(db, "sectorWatch");
+
+const mapSectorDoc = (docSnap: { id: string; data: () => Record<string, unknown> }): SectorWatch => {
+  const data = docSnap.data();
+  return {
+    id: docSnap.id,
+    name: (data.name as string) || "",
+    trend: (data.trend as SectorTrend) || "neutral",
+    performance: (data.performance as string) || "",
+    outlook: (data.outlook as string) || "",
+    content: (data.content as string) || "",
+    topPicks: (data.topPicks as string[]) || [],
+    status: (data.status as "draft" | "published" | "archived") || "draft",
+    createdAt: convertTimestamp(data.createdAt as Timestamp | Date | undefined),
+    updatedAt: convertTimestamp(data.updatedAt as Timestamp | Date | undefined),
+  };
+};
+
+export const getSectorWatch = async (): Promise<SectorWatch[]> => {
+  try {
+    const q = query(sectorWatchCollection, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(mapSectorDoc);
+  } catch (error) {
+    console.error("Error fetching sector watch:", error);
+    return [];
+  }
+};
+
+export const getPublishedSectorWatch = async (): Promise<SectorWatch[]> => {
+  try {
+    const q = query(
+      sectorWatchCollection,
+      where("status", "==", "published"),
+      orderBy("createdAt", "desc")
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(mapSectorDoc);
+  } catch (error) {
+    console.error("Error fetching published sectors:", error);
+    return [];
+  }
+};
+
+export const addSectorWatch = async (
+  sector: Omit<SectorWatch, "id" | "createdAt" | "updatedAt">
+): Promise<string> => {
+  try {
+    const docRef = await addDoc(sectorWatchCollection, {
+      ...sector,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding sector:", error);
+    throw error;
+  }
+};
+
+export const updateSectorWatch = async (
+  id: string,
+  updates: Partial<Omit<SectorWatch, "id" | "createdAt" | "updatedAt">>
+): Promise<void> => {
+  try {
+    const docRef = doc(db, "sectorWatch", id);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error updating sector:", error);
+    throw error;
+  }
+};
+
+export const deleteSectorWatch = async (id: string): Promise<void> => {
+  try {
+    const docRef = doc(db, "sectorWatch", id);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error("Error deleting sector:", error);
+    throw error;
+  }
+};
+

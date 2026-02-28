@@ -7,9 +7,7 @@ import {
   TrendingUp,
   Calendar,
   Building2,
-  Newspaper,
   ChevronRight,
-  Clock,
   BarChart3,
   Landmark,
   Loader2,
@@ -22,7 +20,7 @@ import PageFooter from "@/components/ui/page-footer";
 import BackgroundCircles from "@/components/ui/background-circles";
 import RichTextViewer from "@/components/ui/rich-text-viewer";
 import { cn } from "@/lib/utils";
-import type { WeeklyRecap } from "@/types/admin";
+import type { WeeklyRecap, SectorWatch } from "@/types/admin";
 import {
   collection,
   query,
@@ -33,17 +31,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/config/firebase";
 
-type TabType = "weekly" | "sectors" ;
-
-type sectorWatchType = {
-  id: number;
-  name: string;
-  trend: "up" | "down" | "neutral";
-  performance: string;
-  outlook: string;
-  topPicks: string[];
-};
-
+type TabType = "weekly" | "sectors";
 
 const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
   {
@@ -58,90 +46,6 @@ const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-const sectorWatch: sectorWatchType[] = [
-  {
-    id: 1,
-    name: "Agriculture",
-    trend: "up",
-    performance: "+3.2%",
-    outlook:
-      "Strong demand for agro-commodities and government support driving growth in the sector.",
-    topPicks: ["OKOMUOIL", "PRESCO", "LIVESTOCK"],
-  },
-  {
-    id: 2,
-    name: "Banking",
-    trend: "up",
-    performance: "+5.1%",
-    outlook:
-      "Recapitalization efforts and strong earnings reports boosting investor confidence.",
-    topPicks: ["GTCO", "ZENITHBANK", "ACCESSCORP", "UBA"],
-  },
-  {
-    id: 3,
-    name: "Consumer Goods",
-    trend: "down",
-    performance: "-1.8%",
-    outlook:
-      "Rising input costs and inflationary pressures weighing on margins despite resilient demand.",
-    topPicks: ["NESTLE", "BUA FOODS", "DANGSUGAR"],
-  },
-  {
-    id: 4,
-    name: "Industrial Goods",
-    trend: "up",
-    performance: "+4.7%",
-    outlook:
-      "Infrastructure spending and construction activity fueling demand for cement and building materials.",
-    topPicks: ["DANGCEM", "BUA CEMENT", "WAPCO"],
-  },
-  {
-    id: 5,
-    name: "Insurance",
-    trend: "neutral",
-    performance: "+0.4%",
-    outlook:
-      "Sector consolidation underway with recapitalization requirements creating both risks and opportunities.",
-    topPicks: ["AIICO", "CORNERST", "MANSARD"],
-  },
-  {
-    id: 6,
-    name: "Oil & Gas",
-    trend: "up",
-    performance: "+6.3%",
-    outlook:
-      "Higher crude oil prices and PIA reforms attracting renewed investment into the sector.",
-    topPicks: ["SEPLAT", "TOTAL", "OANDO"],
-  },
-  {
-    id: 7,
-    name: "Healthcare",
-    trend: "neutral",
-    performance: "+0.9%",
-    outlook:
-      "Growing health awareness and local manufacturing push, but FX challenges persist.",
-    topPicks: ["FIDSON", "GLAXOSMITH", "NEIMETH"],
-  },
-  {
-    id: 8,
-    name: "ICT",
-    trend: "up",
-    performance: "+3.8%",
-    outlook:
-      "Digital transformation and growing data demand continuing to drive tech sector performance.",
-    topPicks: ["MTNN", "AIRTELAFRI", "CWG"],
-  },
-  {
-    id: 9,
-    name: "Real Estate",
-    trend: "down",
-    performance: "-0.6%",
-    outlook:
-      "High interest rates dampening property demand, though select REITs remain attractive.",
-    topPicks: ["UPDC", "UACN PROP", "AFRILAND"],
-  },
-];
-
 const convertTimestamp = (timestamp: Timestamp | Date | undefined): Date => {
   if (!timestamp) return new Date();
   if (timestamp instanceof Timestamp) {
@@ -153,8 +57,11 @@ const convertTimestamp = (timestamp: Timestamp | Date | undefined): Date => {
 export default function InsightsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("weekly");
   const [weeklyRecaps, setWeeklyRecaps] = useState<WeeklyRecap[]>([]);
+  const [sectors, setSectors] = useState<SectorWatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sectorsLoading, setSectorsLoading] = useState(true);
   const [selectedRecap, setSelectedRecap] = useState<WeeklyRecap | null>(null);
+  const [selectedSector, setSelectedSector] = useState<SectorWatch | null>(null);
 
   // Real-time listener for published weekly recaps
   useEffect(() => {
@@ -193,6 +100,44 @@ export default function InsightsPage() {
     return () => unsubscribe();
   }, []);
 
+  // Real-time listener for published sectors
+  useEffect(() => {
+    const sectorsQuery = query(
+      collection(db, "sectorWatch"),
+      where("status", "==", "published"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(
+      sectorsQuery,
+      (snapshot) => {
+        const fetchedSectors: SectorWatch[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name || "",
+            trend: data.trend || "neutral",
+            performance: data.performance || "",
+            outlook: data.outlook || "",
+            content: data.content || "",
+            topPicks: data.topPicks || [],
+            status: data.status,
+            createdAt: convertTimestamp(data.createdAt),
+            updatedAt: convertTimestamp(data.updatedAt),
+          } as SectorWatch;
+        });
+        setSectors(fetchedSectors);
+        setSectorsLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching sectors:", error);
+        setSectorsLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
   const formatDateRange = (start: Date, end: Date) => {
     const options: Intl.DateTimeFormatOptions = {
       month: "short",
@@ -217,14 +162,11 @@ export default function InsightsPage() {
     }
   };
 
-  const getImpactColor = (impact: string) => {
-    switch (impact) {
-      case "High":
-        return "bg-primary-peach/10 text-primary-peach";
-      case "Medium":
-        return "bg-primary-orange/10 text-primary-orange";
-      default:
-        return "bg-primary-green/10 text-primary-green";
+  const getTrendLabel = (trend: string) => {
+    switch (trend) {
+      case "up": return { label: "Trending Up", color: "text-primary-green bg-primary-green/10" };
+      case "down": return { label: "Trending Down", color: "text-primary-peach bg-primary-peach/10" };
+      default: return { label: "Neutral", color: "text-primary-orange bg-primary-orange/10" };
     }
   };
 
@@ -365,21 +307,26 @@ export default function InsightsPage() {
             {/* Sector Watch */}
             {activeTab === "sectors" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {sectorWatch.length !== 0 ? (
-                  sectorWatch.map((sector, index) => (
+                {sectorsLoading ? (
+                  <div className="col-span-full flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 text-primary-green animate-spin" />
+                  </div>
+                ) : sectors.length !== 0 ? (
+                  sectors.map((sector, index) => (
                     <motion.div
                       key={sector.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="bg-white rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                      onClick={() => setSelectedSector(sector)}
+                      className="bg-white rounded-2xl p-6 shadow-lg border border-border/50 hover:shadow-xl hover:-translate-y-1 hover:border-primary-green/30 transition-all duration-300 cursor-pointer group"
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-primary-green/10 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-xl bg-primary-green/10 flex items-center justify-center group-hover:scale-105 transition-transform">
                             <Building2 className="w-5 h-5 text-primary-green" />
                           </div>
-                          <h3 className="font-bold text-foreground">
+                          <h3 className="font-bold text-foreground group-hover:text-primary-green transition-colors">
                             {sector.name}
                           </h3>
                         </div>
@@ -402,29 +349,38 @@ export default function InsightsPage() {
                           this week
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-4">
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
                         {sector.outlook}
                       </p>
-                      <div>
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-2">
-                          Top Picks
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {sector.topPicks.map((pick) => (
-                            <span
-                              key={pick}
-                              className="px-3 py-1 rounded-full bg-primary-green/10 text-primary-green text-sm font-medium"
-                            >
-                              {pick}
-                            </span>
-                          ))}
+                      {sector.topPicks.length > 0 && (
+                        <div>
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-2">
+                            Top Picks
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {sector.topPicks.map((pick) => (
+                              <span
+                                key={pick}
+                                className="px-3 py-1 rounded-full bg-primary-green/10 text-primary-green text-sm font-medium"
+                              >
+                                {pick}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
+                      {sector.content && (
+                        <div className="mt-4 flex items-center gap-1 text-xs text-primary-green font-semibold">
+                          Read full article
+                          <ChevronRight className="w-3 h-3" />
+                        </div>
+                      )}
                     </motion.div>
                   ))
                 ) : (
-                  <div className="text-gray-500 col-span-full text-center py-8">
-                    Coming soon.
+                  <div className="col-span-full text-center py-12">
+                    <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">No sector data available yet. Check back soon!</p>
                   </div>
                 )}
               </div>
@@ -525,7 +481,117 @@ export default function InsightsPage() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Sector Detail Modal */}
+      <AnimatePresence>
+        {selectedSector && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedSector(null)}
+              className="fixed inset-0 bg-black/50 z-40"
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed inset-4 md:inset-8 lg:inset-16 bg-white rounded-2xl z-50 overflow-hidden flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <button
+                  onClick={() => setSelectedSector(null)}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Sectors
+                </button>
+                <button
+                  onClick={() => setSelectedSector(null)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-8">
+                <div className="max-w-3xl mx-auto">
+                  {/* Sector meta bar */}
+                  <div className="flex flex-wrap items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-primary-green/10 flex items-center justify-center">
+                      <Building2 className="w-5 h-5 text-primary-green" />
+                    </div>
+                    <span className={cn(
+                      "text-sm font-semibold px-3 py-1 rounded-full",
+                      getTrendLabel(selectedSector.trend).color
+                    )}>
+                      {getTrendLabel(selectedSector.trend).label}
+                    </span>
+                    <span className={cn(
+                      "text-2xl font-bold",
+                      selectedSector.trend === "up"
+                        ? "text-primary-green"
+                        : selectedSector.trend === "down"
+                        ? "text-primary-peach"
+                        : "text-primary-orange"
+                    )}>
+                      {selectedSector.performance}
+                    </span>
+                    <span className="text-sm text-muted-foreground">this week</span>
+                  </div>
+
+                  {/* Sector name */}
+                  <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                    {selectedSector.name} Sector
+                  </h1>
+
+                  {/* Outlook summary */}
+                  <p className="text-lg text-muted-foreground mb-6 leading-relaxed border-l-4 border-primary-green/40 pl-4">
+                    {selectedSector.outlook}
+                  </p>
+
+                  {/* Top Picks */}
+                  {selectedSector.topPicks.length > 0 && (
+                    <div className="bg-primary-green/5 rounded-xl p-5 mb-8">
+                      <h2 className="text-sm font-semibold text-muted-foreground uppercase mb-3">
+                        Top Picks
+                      </h2>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedSector.topPicks.map((pick) => (
+                          <span
+                            key={pick}
+                            className="px-4 py-1.5 rounded-full bg-primary-green text-white text-sm font-semibold"
+                          >
+                            {pick}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Full Article */}
+                  {selectedSector.content ? (
+                    <div className="prose prose-lg max-w-none">
+                      <RichTextViewer content={selectedSector.content} />
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-gray-400">
+                      <Landmark className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                      <p>No detailed article available for this sector yet.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-

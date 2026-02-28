@@ -65,7 +65,7 @@ export function Navigation() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2 flex-shrink-0">
             <Image
               src="/logo.png"
               alt="Logo"
@@ -76,7 +76,7 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <NavigationMenu viewport={isMobile} className="hidden md:flex">
+          <NavigationMenu viewport={isMobile} className="hidden lg:flex min-w-0">
             <NavigationMenuList className="gap-1">
               {/* Show these nav items only when logged in */}
               {user && (
@@ -165,7 +165,7 @@ export function Navigation() {
           </NavigationMenu>
 
           {/* CTA Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             {loading ? (
               <div className="w-20 h-9 bg-gray-200 animate-pulse rounded-md" />
             ) : user ? (
@@ -182,7 +182,7 @@ export function Navigation() {
                       <User className="w-4 h-4 text-primary-green" />
                     </div>
                   )}
-                  <span className="text-sm font-medium text-foreground max-w-[120px] truncate">
+                  <span className="text-sm font-medium text-foreground max-w-[120px] truncate hidden lg:inline">
                     {user.displayName || user.email?.split("@")[0]}
                   </span>
                 </div>
@@ -236,7 +236,7 @@ export function Navigation() {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -249,7 +249,7 @@ export function Navigation() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border/40 py-4">
+          <div className="lg:hidden border-t border-border/40 py-4">
             <nav className="flex flex-col space-y-1">
               {/* Show these sections only when logged in */}
               {user && (

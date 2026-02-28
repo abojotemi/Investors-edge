@@ -1,6 +1,6 @@
 // Admin Types
 
-export type UserRole = "user" | "admin" | "super_admin";
+export type UserRole = "user" | "admin";
 
 export type ExperienceLevel =
   | "Beginner"
@@ -229,6 +229,22 @@ export interface WeeklyRecap {
   weekEndDate: Date;
   content: string; // Rich text content
   highlights: string[]; // Key highlights of the week
+  status: ContentStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Sector Watch types
+export type SectorTrend = "up" | "down" | "neutral";
+
+export interface SectorWatch {
+  id: string;
+  name: string;
+  trend: SectorTrend;
+  performance: string; // e.g. "+3.2%" or "-1.8%"
+  outlook: string;
+  content: string; // Rich-text article body
+  topPicks: string[]; // ticker symbols
   status: ContentStatus;
   createdAt: Date;
   updatedAt: Date;

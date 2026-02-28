@@ -18,6 +18,7 @@ import {
   TrendingUp,
   GraduationCap,
   MessageSquare,
+  Building2,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { useAdmin, AdminProvider } from "@/context/admin-context";
@@ -48,6 +49,11 @@ const navItems = [
     label: "Stocks",
     href: "/admin/stocks",
     icon: TrendingUp,
+  },
+  {
+    label: "Sector Watch",
+    href: "/admin/sectors",
+    icon: Building2,
   },
   {
     label: "Discussions",

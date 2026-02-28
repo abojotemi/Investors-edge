@@ -42,7 +42,6 @@ interface AuthContextType {
     >
   ) => Promise<void>;
   isAdmin: boolean;
-  isSuperAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -84,6 +83,13 @@ const getOrCreateUserProfile = async (
         updates.photoURL = user.photoURL;
       }
 
+      // Migrate legacy "super_admin" role to "admin"
+      const resolvedRole: UserRole =
+        data.role === "super_admin" || data.role === "admin" ? "admin" : "user";
+      if (data.role === "super_admin") {
+        updates.role = "admin";
+      }
+
       // Apply updates if any
       if (Object.keys(updates).length > 0) {
         updates.updatedAt = serverTimestamp();
@@ -100,7 +106,7 @@ const getOrCreateUserProfile = async (
           "",
         photoURL:
           (updates.photoURL as string) || data.photoURL || user.photoURL,
-        role: data.role || "user",
+        role: resolvedRole,
         bio: data.bio,
         experienceLevel: data.experienceLevel,
         riskTolerance: data.riskTolerance,
@@ -217,6 +223,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       const userData = userSnap.data();
+      // Accept both "admin" and legacy "super_admin" (will be migrated on profile load)
       if (userData.role !== "admin" && userData.role !== "super_admin") {
         // User exists but isn't an admin - sign them out and throw error
         await firebaseSignOut(auth);
@@ -317,9 +324,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const isAdmin =
-    userProfile?.role === "admin" || userProfile?.role === "super_admin";
-  const isSuperAdmin = userProfile?.role === "super_admin";
+  const isAdmin = userProfile?.role === "admin";
 
   const value = {
     user,
@@ -333,7 +338,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     signOut,
     updateUserProfile,
     isAdmin,
-    isSuperAdmin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
