@@ -55,8 +55,8 @@ export default function AuthenticatedLayout({
           className="fixed bottom-6 right-6 z-50 group"
         >
           <span className="absolute inset-0 rounded-full bg-primary-green/30 animate-ping" />
-          <span className="relative flex items-center justify-center w-14 h-14 rounded-full bg-primary-green text-white shadow-lg hover:bg-primary-green/90 hover:scale-110 transition-all duration-200">
-            <MessageCircle className="w-6 h-6" />
+          <span className="relative flex items-center justify-center w-fit p-3 h-14 rounded-full bg-primary-green text-white shadow-lg hover:bg-primary-green/90 hover:scale-105 transition-all duration-200 gap-2">
+            <MessageCircle className="w-6 h-6" /> <span className="font-bold">Ask your Question</span>
           </span>
         </Link>
       )}

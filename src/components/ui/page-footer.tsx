@@ -11,7 +11,7 @@ export default function PageFooter() {
           <div className="flex items-center gap-2 cursor-pointer">
             <Link href="/home">
             <Image
-              src="/logo-inverted.jpg"
+              src="/logo-trans.png"
               alt="Logo"
               width={160}
               height={40}
