@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { ContentProvider } from "@/context/content-context";
 import PageFooter from "@/components/ui/page-footer";
+import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 
 export default function AuthenticatedLayout({
   children,
@@ -13,6 +15,9 @@ export default function AuthenticatedLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  const isOnForum = pathname.startsWith("/community/forum");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -41,6 +46,20 @@ export default function AuthenticatedLayout({
     <ContentProvider>
       {children}
       <PageFooter />
+
+      {/* Floating Discussion Forum Bubble */}
+      {!isOnForum && (
+        <Link
+          href="/community/forum"
+          title="Discussion Forum"
+          className="fixed bottom-6 right-6 z-50 group"
+        >
+          <span className="absolute inset-0 rounded-full bg-primary-green/30 animate-ping" />
+          <span className="relative flex items-center justify-center w-14 h-14 rounded-full bg-primary-green text-white shadow-lg hover:bg-primary-green/90 hover:scale-110 transition-all duration-200">
+            <MessageCircle className="w-6 h-6" />
+          </span>
+        </Link>
+      )}
     </ContentProvider>
   );
 }

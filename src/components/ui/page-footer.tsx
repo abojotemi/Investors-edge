@@ -11,11 +11,11 @@ export default function PageFooter() {
           <div className="flex items-center gap-2 cursor-pointer">
             <Link href="/home">
             <Image
-              src="/logo.png"
+              src="/logo-inverted.jpg"
               alt="Logo"
               width={160}
               height={40}
-              className="h-10 w-auto object-contain invert"
+              className="h-10 w-auto object-contain"
             />
             </Link>
           </div>

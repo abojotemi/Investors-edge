@@ -34,9 +34,9 @@ interface ProjectionPoint {
 
 // --- Constants ---
 const ANNUAL_RETURNS: Record<string, number> = {
-  conservative: 0.06,
-  moderate: 0.1,
-  aggressive: 0.15,
+  conservative: 0.18,
+  moderate: 0.28,
+  aggressive: 0.50,
 };
 
 const STYLE_CONFIG = {
@@ -53,7 +53,7 @@ const STYLE_CONFIG = {
     ring: "ring-primary-green/30",
     badge: "bg-primary-green text-white",
     badgeSoft: "bg-primary-green/10 text-primary-green",
-    returnLabel: "~6% p.a.",
+    returnLabel: "~18% p.a.",
     bgFull: "bg-primary-green",
     textColor: "text-primary-green",
   },
@@ -70,7 +70,7 @@ const STYLE_CONFIG = {
     ring: "ring-primary-orange/30",
     badge: "bg-primary-orange text-white",
     badgeSoft: "bg-primary-orange/10 text-primary-orange",
-    returnLabel: "~10% p.a.",
+    returnLabel: "~28% p.a.",
     bgFull: "bg-primary-orange",
     textColor: "text-primary-orange",
   },
@@ -87,7 +87,7 @@ const STYLE_CONFIG = {
     ring: "ring-primary-peach/30",
     badge: "bg-primary-peach text-white",
     badgeSoft: "bg-primary-peach/10 text-primary-peach",
-    returnLabel: "~15% p.a.",
+    returnLabel: "~50% p.a.",
     bgFull: "bg-primary-peach",
     textColor: "text-primary-peach",
   },
@@ -95,9 +95,9 @@ const STYLE_CONFIG = {
 
 // --- Helpers ---
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-NG", {
     style: "currency",
-    currency: "USD",
+    currency: "NGN",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
@@ -202,7 +202,7 @@ function CompoundingChart({
               strokeDasharray="4 4"
             />
             <text x={PAD.left - 10} y={y(tick) + 4} textAnchor="end" fill="#94a3b8" fontSize="11">
-              {tick >= 1000 ? `$${(tick / 1000).toFixed(0)}k` : `$${tick}`}
+              {tick >= 1000 ? `₦${(tick / 1000).toFixed(0)}k` : `₦${tick}`}
             </text>
           </g>
         ))}
@@ -624,7 +624,7 @@ export default function PortfolioJourneyPage() {
                           Starting Amount
                         </label>
                         <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₦</span>
                           <input
                             type="number"
                             placeholder="e.g. 5000"
@@ -643,7 +643,7 @@ export default function PortfolioJourneyPage() {
                           Monthly Contribution
                         </label>
                         <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">₦</span>
                           <input
                             type="number"
                             placeholder="e.g. 500"
